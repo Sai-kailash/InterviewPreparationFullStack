@@ -1,0 +1,45 @@
+| **Command**  | **Interview Question**                   | **Answer**                                                                                     |
+| ------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `git init`   | What does `git init` do?                 | Initializes a new Git repository in the current directory.                                     |
+| `git add`    | What does `git add .` do?                | Stages all modified and new files for the next commit.                                         |
+| `git commit` | What happens during `git commit`?        | Saves the staged changes as a new commit in the repository.                                    |
+| `git status` | What does `git status` show?             | Shows the state of the working directory and staging area.                                     |
+| `git diff`   | How do you see the unstaged changes?     | `git diff` shows changes not yet staged; `git diff --cached` shows staged changes.             |
+| `git log`    | How do you view commit history?          | `git log` shows a list of past commits with author, message, and hash.                         |
+| `git config` | How do you set your user name and email? | `git config --global user.name "John"` and `git config --global user.email "john@example.com"` |
+
+
+| **Command**    | **Interview Question**                        | **Answer**                                                                                |
+| -------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `git pull`     | What does `git pull` do?                      | Fetches changes from the remote and merges them into the current branch.                  |
+| `git fetch`    | How is `git fetch` different from `git pull`? | `git fetch` downloads changes but doesn’t merge; `git pull` does both.                    |
+| `git push`     | What happens during `git push`?               | Pushes local commits to the remote branch.                                                |
+| `git branch`   | How do you create a new branch?               | `git branch feature-xyz` creates a new branch without switching to it.                    |
+| `git checkout` | What’s the use of `git checkout`?             | Switches branches or restores files from history.                                         |
+| `git clone`    | What does `git clone` do?                     | Copies a remote repository locally with full history.                                     |
+| `git remote`   | How do you view or add remotes?               | `git remote -v` to list, `git remote add origin <url>` to add.                            |
+| `git stash`    | What does `git stash` do?                     | Temporarily saves uncommitted changes and reverts the working directory to a clean state. |
+| `git tag`      | What is a tag?                                | Tags are used to mark specific points in history like releases; use `git tag v1.0.0`.     |
+
+
+| **Command**       | **Interview Question**                                       | **Answer**                                                                                |
+| ----------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `git merge`       | What does `git merge` do?                                    | Combines changes from one branch into another.                                            |
+| `git rebase`      | How is `git rebase` different from merge?                    | Rebase rewrites history to make a linear commit path; merge retains all branch histories. |
+| `git revert`      | What does `git revert` do?                                   | Creates a new commit that undoes a previous one without altering history.                 |
+| `git reset`       | What’s the difference between `--soft`, `--mixed`, `--hard`? | `--soft`: keep in staging; `--mixed`: unstage; `--hard`: discard all changes.             |
+| `git cherry-pick` | When do you use `git cherry-pick`?                           | Applies a single commit from another branch to the current branch.                        |
+| `git reflog`      | What is `reflog` used for?                                   | Tracks all changes to HEAD, allowing you to recover lost commits.                         |
+| `git bisect`      | What does `git bisect` do?                                   | Uses binary search to find the commit that introduced a bug.                              |
+| `git clean`       | What does `git clean -fd` do?                                | Removes untracked files (`-f`) and directories (`-d`) from the working directory.         |
+
+| **Topic**          | **Question**                                  | **Answer**                                                                                       |
+| ------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Merge conflicts    | How do you resolve a merge conflict?          | Manually edit the files, then `git add <file>` and `git commit` to complete the merge.           |
+| Mistaken commit    | How to undo the last commit but keep changes? | Use `git reset --soft HEAD~1` to uncommit but retain changes.                                    |
+| Commit fix         | How to change last commit message?            | `git commit --amend -m "New message"`                                                            |
+| Undo pushed commit | How to revert a pushed commit safely?         | Use `git revert <commit-hash>` to undo and push a new inverse commit.                            |
+| Squash commits     | How to squash multiple commits?               | Use `git rebase -i HEAD~n` and mark commits with `squash` or `fixup`.                            |
+| Rebase warning     | What happens when you rebase a pushed branch? | Can cause conflicts and history rewriting; must force push (`git push --force`).                 |
+| Detached HEAD      | What is detached HEAD?                        | A state where HEAD points to a commit instead of a branch; changes may be lost unless committed. |
+| Gitignore          | How do you exclude files from Git?            | Add file patterns to `.gitignore`; they won't be tracked or committed.                           |

@@ -1,0 +1,35 @@
+MinimumIntervals = max(tasks.length, (maxFreq−1)×(n+1)+maxCount)
+
+Array of Priority Queues
+int n = 5;  // array size
+PriorityQueue<Integer>[] pqArray = new PriorityQueue[n];
+
+for (int i = 0; i < n; i++) {
+    pqArray[i] = new PriorityQueue<>();  // or use custom comparator
+}
+
+
+f(words[i].length() != reset){
+
+                if(words[i].length() > reset){
+                    i++;
+                    continue;
+                }
+
+                int count = 0;
+                for(int j=index_1;j<i;j++){
+                    if(words[i].startsWith(words[j])){
+                        count++;
+                    }
+                }
+
+                if(count == words[i].length()-1){
+                    reset = words[i].length() + 1;
+                }
+
+                else{
+                i++;
+                continue;
+                }
+
+            }

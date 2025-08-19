@@ -1,0 +1,451 @@
+@Configuration
+@Service
+@Component
+@Override - mainly used during Abstraction
+@Autowired - Field injection
+@Data - Gives automatic getter and setter toString() and equals()
+@Repository
+@Scheduler
+@EnableCache
+@RestController, @RequestMapping (PUT, POST, GET) mapping
+@Value
+@Getter
+@Setter
+@Entity, @Table, @Id {JPA: Java Persistence API)
+@Type @Cache @Formula @Where @NaturalId {Hibernate}
+@Query: Spring Data JPA
+@Cacheable
+@CacheEvict
+@CachePut
+
+IoC is a coding technique where the control is passed over to external or other framework
+
+IoC (Inversion of Control) container is a core component of the Spring Framework that manages object creation, configuration, and lifecycle
+
+@SpringBootApplication
+public class MyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+
+IoC is created during SpringApplication.run
+
+Standard way
+SpringApplication application = new SpringApplication(MyApplication.class);
+ConfigurableApplicationContext context = application.run(args);
+
+Follow factory patterns during code snippets
+Interface & Implementation
+
+JPA: Object Relational mapping(ORM) used in database (Jakarta Persistence API)
+Hibernate is the framework used to implement ORM
+
+You define entities using JPA annotations
+Spring Data JPA provides JpaRepository interface
+JpaRepository methods are implemented automatically
+Under the hood, Hibernate (the ORM) executes the actual database operations
+
+JpaRepository -> Spring Data JPA -> JPA -> Hibernate (by default)
+Interface        (Abstraction layer) Defines the standard specification
+IOC(Dependency injections), Constructor injection Field injection Setter injection
+Key Benefits:
+Dependency management
+Loose Coupling
+Improved modularity
+Easier unit testing
+More flexible configuration
+Better code reusability
+Simplified maintenance
+Reduced boilerplate code
+Better separation of concerns
+Enhanced scalability
+
+
+AOP enables developers to differentiate cross cutting concerns from the main business logic
+AOP(Differentiating components logging, business logic, transactions, Centralized handling of cross-cutting concerns),
+MVC, 
+Transaction management and data access
+
+
+JDK->JRE->JVM
+javac->.class->machine code
+
+Java Execution Flow:
+1. Source Code (.java) 
+        ↓ [JAVAC - Java Compiler]
+2. Bytecode (.class)
+        ↓ [JVM]
+        ├── Interpreter: Executes bytecode directly no compilation required
+        └── JIT: Converts hot bytecode(frequently executed bytecode) to machine code
+		
+JVM Execution Java_Core.Strategy
+├── Cold Code: Interpreter (bytecode)
+└── Hot Code: JIT (machine code)
+
+		
+1. Initial execution: Interpreter
+   - Executes bytecode directly
+   - Collects execution statistics
+
+2. After threshold: JIT Compilation
+   - Compiles hot methods
+   - Replaces interpreted code with machine code
+
+3. Subsequent executions:
+   - Uses compiled machine code
+   - Much faster execution
+
+
+Springboot provides 
+Standalone applciation
+reduces boilerplate code
+embedded server
+auto configuration of servers
+
+
+build jar files for executing (Write once Run anywhere)
+Maven - XML
+Gradle - Groovy/Kotlin
+
+MyProject.jar
+├── META-INF/
+│   └── MANIFEST.MF    // Manifest file with metadata
+├── com/example/
+│   ├── Main.class
+│   ├── Utils.class
+│   └── Config.class
+├── resources/
+│   ├── config.properties
+│   └── images/
+└── lib/               // Dependencies
+
+
+To make the class immutable use private and final everywhere and use only getters
+
+Immutable types
+Primitive data types
+Wrapper classes
+
+Mutable types:
+custom classes
+arrays
+lists
+queues
+stacks
+graphs
+trees
+hash map
+hash set
+collections
+
+Make a class/method static when it is dependent upon only its parameters
+They don't need object state
+The beHavior is the same for all instances of the class
+They're utility/helper functions : string/datetime manipulations
+They're used for memory optimization
+
+Benfits:
+Loaded once per class
+no need instance to call the method
+
+J2EE: Java 2 Platform Enterprise Edition JSP/JDBC/Servlet
+Java SE: Standalone java application
+
+JDBC approaches:
+Driver Manager 
+Connection conn = DriverManager.getConnection(
+        "jdbc:mysql://localhost:3306/dbname",
+        "username",
+        "password"
+    );
+	
+	
+Data Source
+InitialContext ctx = new InitialContext();
+DataSource ds = (DataSource) ctx.lookup("jdbc/myDataSource");
+Connection conn = ds.getConnection();
+
+Connection pool(Hikari)
+HikariConfig config = new HikariConfig();
+config.setJdbcUrl("jdbc:mysql://localhost:3306/dbname");
+config.setUsername("user");
+config.setPassword("password");
+config.setMaximumPoolSize(10);
+
+HikariDataSource ds = new HikariDataSource(config);
+Connection conn = ds.getConnection();
+
+Prevents database overload
+Controls resource consumption
+Manages concurrent connections
+
+Josephus problem: o(n)
+for i in range(1,n+1):
+survivor = ((survivor + k - 1) % i) + 1
+
+
+
+class MyThread implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("Running in thread: " + Thread.currentThread().getName());
+		for(int i=1;i<5;i++){
+		System.out.println("Running in thread: " + Thread.currentThread().getName() + i);
+		}
+    }
+}
+
+public class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread myThread = new MyThread();
+		MyThread myThread2 = new MyThread();
+        
+        // Wrong way - runs in main thread
+        System.out.println("Direct run() call:");
+        myThread.run();  // This executes in the main thread
+        
+        // Correct way - runs in new thread
+        System.out.println("\nUsing start():");
+        Thread thread = new Thread(myThread);
+        thread.start();  // This creates a new thread and calls run()
+		Thread thread2 = new Thread(myThread2);
+        thread2.start();
+    }
+}
+
+Java does not allow multiple class inheritance instead allows ineterfaces 
+1 class and multiple interfaces
+class can also be abstract
+
+
+[JVM Memory]
+├── Metadata Area (Method Area)
+│   └── Class definitions loaded
+│       ├── @Java_Core.Component classes
+│       ├── @Java_Core.Service classes
+│       └── @Repository classes
+└── Heap Memory
+    └── Spring Container
+        ├── BeanFactory
+        └── ApplicationContext
+		
+Heap Memory
+└── UserController Instance
+    └── references → UserService Instance
+        └── references → UserRepository Instance
+		
+JVM Memory
+├── Stack Memory
+│   └── Method Frame
+│       ├── Local primitives
+│       └── Object references
+│
+├── Heap Memory
+│   └── Objects
+│       └── Instance primitives
+│
+└── Metaspace
+    └── Static primitives
+
+		
+Performance Optimizations:
+Spring uses internal caches for bean metadata
+Singleton beans are cached after creation
+Proxy classes are generated and cached
+Reflection metadata is cached
+Memory Leak Prevention:
+Proper scope management
+Cleaning up custom scopes
+Handling of prototype beans
+Proper destruction callbacks
+This memory management process ensures:
+Efficient resource utilization
+Proper dependency management
+Thread-safe bean creation
+Optimized performance
+Proper cleanup on shutdown
+
+
+JVM Memory
+├── Heap Memory (Shared across threads)
+│   └── Objects and Instance variables
+│
+├── Metadata Area/Method Area (Shared across threads)
+│   ├── Class definitions
+│   ├── Static variables
+│   ├── Constant pool
+│   └── Method bytecode
+│
+└── Stack Memory (Per thread)
+    ├── Method frames
+    ├── Local variables
+    ├── Method parameters
+    └── Call stack
+
+
+Advantages of using Reflections 
+Java Reflection is a powerful feature that allows programs to examine and modify the behavior of classes, interfaces, fields, and methods at runtime
+Getting classes, fields, methods, constructors, annotations, arrays and access modifiers.
+
+HashMap is not synchronized
+HashTable is synchronized(thread safe)
+
+HashMap allows null
+HashTable throws NullPointerException
+
+HashMap uses Iterator(can remove elements)
+HashTable uses Iterator and Enumerator(cannot remove elements)
+
+A Stream in Java is a sequence of elements that supports sequential and parallel aggregate operations
+
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+// Filter
+List<Integer> evenNumbers = numbers.stream()
+    .filter(n -> n % 2 == 0)
+    .collect(Collectors.toList()); // [2, 4, 6, 8, 10]
+
+// Map
+List<Integer> squared = numbers.stream()
+    .map(n -> n * n)
+    .collect(Collectors.toList()); // [1, 4, 9, 16, 25, ...]
+
+// Sorted
+List<Integer> sorted = numbers.stream()
+    .sorted()
+    .collect(Collectors.toList());
+
+// Distinct
+List<Integer> distinct = numbers.stream()
+    .distinct()
+    .collect(Collectors.toList());
+	
+enum StreamState {
+    INITIAL,    // Stream created
+    CONSUMED,   // Terminal op executed
+    CLOSED      // Stream closed
+}
+
+
+// Byte Stream → Character Stream → Buffered Stream
+InputStream → InputStreamReader → BufferedReader
+
+InputStreamReader read = new InputStreamReader(System.in)
+BufferedReader in = new BufferedReader(read)
+
+Junit:
+@BeforeAll -- static
+@BeforeEach
+@AfterEach
+@AfterAll -- static
+
+Follow Arrange Act Assert during Junit testing.
+
+Common ApplicationContext Implementations
+
+ClassPathXmlApplicationContext: Loads the context configuration from an XML file located in the classpath.
+FileSystemXmlApplicationContext: Similar to ClassPathXmlApplicationContext, this loads from an XML file but requires a file system path.
+AnnotationConfigApplicationContext: Reads the configuration classes produced with Java annotations.
+GenericWebApplicationContext: Designed for web-aware applications and compatible with Servlet 3.0 environments.
+
+Spring provides a powerful Aspect-Oriented Programming (AOP) framework.
+This framework simplifies the development process by enabling the separation of cross-cutting concerns from the main business logic.
+This leads to modular and more maintainable code.
+
+Aspect: Module encapsulating the cross cutting concerns
+PointCut : Defines a join point
+Join point: A join point is a point during the execution of a program such as a method invocation.
+Method Execution: This join point signifies execution of a method.
+            Method Call: Denotes when the method is called from another location in the code.
+            Class Initialization: Marks when a class is initialized.
+            Field Access: Represents read or write actions on a field.
+            Instance Construction: Indicates the instantiation of an object through a constructor.
+
+Advice: The action taken by an aspect at a particular join point. Different types of advice include before, after, around, after-returning, and after-throwing.
+Before: Runs the advice before the selected join point.
+        After: Executes the advice after the join point; applicable for both successful and failing conditions.
+        Around: Provides control over when and if the method proceeds to its natural execution. This enables advice to be run before and after the method execution.
+        AfterReturning: Only runs when the join point method is successfully completed.
+        AfterThrowing: Only applies when the join point method throws an exception.
+
+
+
+Cross-cutting concerns are aspects of software development that affect the entire application, yet are largely kept separate from the core business logic.
+This separation improves the modularity, maintainability, and reusability of the codebase.
+Spring Aspect-Oriented Programming (AOP) is tailored for managing cross-cutting concerns.
+While a “concern” is a more general term, referring to anything that requires the application’s attention, a “cross-cutting concern” specifically relates to the aspects that cut across different modules or layers of a software system.
+
+Examples of Cross-Cutting Concerns
+
+Logging: The need to log method invocations or business operations.
+Security: Centralized control for authentication and authorization mechanisms.
+Caching: Optimizing performance by caching the results of expensive operations.
+Exception Handling: Providing a consistent way to handle exceptions across the application.
+The AOP approach of managing such concerns employs join points, pointcuts, and advice, and is separate from method-specific or local object concerns.
+
+@Aspect
+@Component
+public class LoggingAspect {
+    // Service class methods - pointcut
+    @Pointcut("within(com.example.service..*)")
+    public void serviceMethods() {}
+
+    // Before advice
+    @Before("serviceMethods()")
+    public void before(JoinPoint joinPoint) {
+        // Log method call before execution
+    }
+}
+
+@Repository
+public class MyRepository {
+
+    private final JdbcTemplate jdbcTemplate; //template
+
+    @Autowired
+    public MyRepository(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    public long getUserCount() {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class);
+    }
+}
+
+Spring MVC in Action: Request Lifecycle
+
+User Request: User interaction with the web application generates an HTTP request.
+DispatcherServlet’s Request Handling: The DispatcherServlet is the first handler. It triggers handler mappings, and upon finding a matching controller, it delegates further.
+Controller’s Processing: The controller contains the business logic and interacts with the model.
+Model and View Creation: The controller prepares the model and returns a logical view name, which is used by the view resolver.
+View Rendering: Once the view is resolved, the view component renders the model to a response format.
+
+Key components of the architecture include the
+Dispatcher Servlet,
+Handler Mapping,
+Controller Layer,
+Service Layer, &
+the View Layer.
+
+@Controller: Primarily used to develop multi-view applications with HTML as the standard presentation layer.
+@RestController: Instead of incorporating a view, it focuses on outputting data or JSON/XML objects for RESTful APIs.
+
+The Liskov Substitution Principle (LSP) is one of the five SOLID principles that guides object-oriented design.
+Named after Barbara Liskov, the LSP mandates that any instance of a base class should be replaceable with a derived class instance without affecting the program’s correctness.
+
+
+The volatile keyword in Java ensures that multiple threads handle a variable correctly. It indicates that a variable’s value may be changed by different global or shared threads.
+Need for Volatility
+Without volatile, a thread could cache variable values, leading to inaccurate or outdated information for other threads.
+
+States of thread
+NEW
+RUNNABLE
+BLOCKED
+WAITING
+TIMED_WAITING
+TERMINATED
+
+
+

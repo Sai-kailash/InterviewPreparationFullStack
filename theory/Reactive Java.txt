@@ -1,0 +1,325 @@
+Operator	Thread Used	Affected Operators
+subscribeOn(IO)	Emits and runs all upstream	range, filter, map
+observeOn(COMPUTATION)	Switches thread for downstream	reduce, subscribe
+
+Observable.range(1, 5)
+    .doOnNext(i -> log("emit " + i))                       // 🟢 Runs on IO (source)
+    .subscribeOn(Schedulers.io())                          // 🔧 Source runs on IO thread
+
+    .observeOn(Schedulers.computation())                   // 🔄 Switch to Computation
+    .filter(i -> {
+        log("filter " + i);                                // 🟡 Runs on Computation
+        return i % 2 == 0;
+    })
+
+    .observeOn(Schedulers.newThread())                     // 🔄 Switch again
+    .map(i -> {
+        log("map " + i);                                   // 🔴 Runs on New Thread
+        return i * 10;
+    })
+
+    .observeOn(Schedulers.single())                        // 🔄 Final switch
+    .subscribe(result -> log("subscribe: " + result));     // 🔵 Runs on Single thread
+
+Observable<Integer> source = Observable.just(1, 2, 3);
+source
+    .flatMap(x -> Observable.just(x, x + 1))
+    .subscribe(System.out::println);
+
+How zip() Works:
+It emits items only when all source Observables have emitted a corresponding item. Then it applies a function to combine those items into one.
+
+Observable.just(1, 2)
+Observable.just("A", "B", "C", "D")
+Only 1A and 2B will be emitted — the zip stops when the shorter stream ends.
+
+Observable.zip(
+    observable1,
+    observable2,
+    (item1, item2) -> combine(item1, item2)
+)
+.subscribe(
+    result -> { /* handle result */ },
+    throwable -> { /* handle error */ },
+    () -> { /* handle completion */ }
+);
+
+🛠️ Backpressure Strategies in RxJava
+
+Strategy	Description
+MISSING	No strategy; you must handle backpressure manually
+ERROR	Throws MissingBackpressureException when buffer overflows
+BUFFER	Buffers all items (risk: OutOfMemoryError if downstream is too slow)
+DROP	Drops items that can’t be delivered because of lack of downstream demand
+LATEST	Keeps only the latest item, drops all previous if not consumed
+
+Error Types in RxJava
+
+onError: Notifies the observer that an error occurred, and the stream won’t produce any further events.
+onErrorReturn: Instead of terminating the stream, this operator allows you to emit a default value and then end.
+onErrorResumeNext: Lets you switch to another observable when an error is encountered.
+onErrorResume is an operator in Project Reactor used to handle errors gracefully by providing an alternative Publisher (usually a fallback or recovery logic) when an error occurs.
+retry: As the name suggests, it resubscribes to the source observable on error, potentially with a limit on the number of retries.
+
+
+The debounce() operator in RxJava is used to limit how often items are emitted — it waits for a quiet period (no new emissions) before emitting the most recent item.
+
+✅ Think of it like:
+“Only emit the item if nothing new has come in for X milliseconds.”
+It’s very useful for things like:
+
+User input search (wait until user stops typing)
+Button clicks (avoid accidental double clicks)
+Reducing high-frequency events
+
+Observable<Long> source = Observable
+        .interval(100, TimeUnit.MILLISECONDS) // emits every 100ms
+        .take(10)                             // take first 10 emissions
+        .debounce(200, TimeUnit.MILLISECONDS) // only emit if 200ms silence
+        .subscribe(System.out::println);
+
+What debounce() really does:
+It waits for a quiet period after each emitted item.
+If no new item arrives within the given time (say 200ms),
+then it emits the last item.
+
+An item is emitted upstream (say 1)
+debounce() starts a 200ms timer
+If no other item arrives during that 200ms → 1 is emitted
+If another item (2) comes before 200ms, debounce() drops 1 and restarts the timer for 2
+This process continues
+The last item is always eligible to be emitted, because the stream ends (which acts like a long "pause")
+========================================================================================================================
+Technology / Framework	Uses Reactive Streams?	Implementation Example
+Java (JDK 9+)	✅ Yes	java.util.Flow
+RxJava	✅ Yes	Flowable, Subscriber
+Project Reactor	✅ Yes	Flux, Mono, BaseSubscriber
+Akka Streams	✅ Yes	Source, Sink
+Spring WebFlux	✅ Yes	Built on Project Reactor
+
+Subject Type	Behavior
+PublishSubject	Emits to subscribers only after they subscribe.
+BehaviorSubject	Emits the most recent item (or default) to new subscribers.
+ReplaySubject	Buffers and re-emits all items to new subscribers.
+AsyncSubject	Emits only the last item when the stream completes.
+
+=======================================================Reactive Streams API or Reactive Streams Specification=============================
+
+SubmissionPublisher  ~ Observable in Rxjava
+Flow.Subscriber ~ observer in RxJava
+
+public interface Publisher<T> {
+    void subscribe(Subscriber<? super T> subscriber);
+}
+
+public interface Subscriber<T> {
+    void onSubscribe(Subscription subscription);
+    void onNext(T item);
+    void onError(Throwable t);
+    void onComplete();
+}
+
+public interface Subscription {
+    void request(long n);  // Ask for n items
+    void cancel();         // Stop receiving data
+}
+
+public interface Processor<T, R> extends Subscriber<T>, Publisher<R> {
+    // No new methods — combines both interfaces
+}
+
+====================================================Project Reactor=====================================================
+
+Feature	Mono	Flux
+Emits	0 or 1 item	0 to N items
+Common use	Single API result	List or stream of results
+Completion	After 1 item or empty	After all items are emitted
+Backpressure	Less useful	Highly useful
+Reactive Type	Reactive single	Reactive stream
+
+Test strategies for Project Reactor
+
+Strategy	Purpose
+StepVerifier.create       	Most standard way to test Flux/Mono values
+
+Flux<String> flux = Flux.just("apple", "banana", "cherry");
+
+StepVerifier.create(flux)
+    .expectNext("apple")
+    .expectNext("banana")
+    .expectNext("cherry")
+    .expectComplete()
+    .verify();
+
+StepVerifier.withVirtualTime()         	Simulate time-sensitive flows
+
+@Test
+void testWithDelay() {
+    StepVerifier.withVirtualTime(() -> Flux.interval(Duration.ofSeconds(1)).take(3))
+        .thenAwait(Duration.ofSeconds(3))
+        .expectNext(0L, 1L, 2L)
+        .expectComplete()
+        .verify();
+}
+
+collectList().block()    	For quick assertions (non-async safe)
+
+List<String> result = Flux.just("one", "two").collectList().block();
+assertEquals(List.of("one", "two"), result);
+
+Mocking	When testing services using Mono/Flux
+when(userService.getUsers()).thenReturn(Flux.just(new User("Alice")));
+
+=================================================== Convert blocking code to non blocking code=====================================================
+
+use Mono.fromCallable(() -> blockingMethod()).subscribeOn(Schedulers.boundedElastic());
+you can use immediate, single, boundedElastic and parallel schedulers
+
+when many methods are blocking
+Flux<String> flux = Flux.defer(() -> Flux.fromIterable(blockingRepo.findAll()))
+    .subscribeOn(Schedulers.boundedElastic());
+
+ do not use mono.just for a blocking method/operation
+ Blocking methods include JDBC connection, REST APIs, file and legacy
+
+ Step	What to Do
+ 1	Wrap blocking code in Mono.fromCallable() or Mono.defer()
+ 2	Offload it using .subscribeOn(Schedulers.boundedElastic())
+ 3	Never block (Thread.sleep, .get(), .join()) inside .map() or .flatMap()
+
+ ✅ Use Cases for Context
+ Security context (e.g., user info, roles)
+ Tracing/logging metadata (e.g., correlation IDs)
+ Configuration values or tenant info
+ Any “per-subscriber” metadata that should not be part of the payload
+
+ Mono<String> result = Mono.deferContextual(ctx -> {
+     String userId = ctx.get("userId");
+     return Mono.just("Hello " + userId);
+ })
+ .contextWrite(Context.of("userId", "sai"));
+
+| Feature        | Description                                 |
+| -------------- | ------------------------------------------- |
+| `Context`      | Immutable, subscriber-scoped metadata store |
+| Access         | `.deferContextual()`                        |
+| Set            | `.contextWrite()`                           |
+| Thread-safe?   | Yes — it's signal-scoped, not thread-scoped |
+| Alternative to | `ThreadLocal` in reactive apps              |
+
+
+Transform operator in Reactor
+Works as a function chain
+Function<Flux<String>, Flux<String>> toUppercaseAndFilter = flux ->
+    flux.map(String::toUpperCase)
+        .filter(s -> s.startsWith("A"));
+
+Flux<String> names = Flux.just("alice", "bob", "anna");
+
+names.transform(toUppercaseAndFilter)
+     .subscribe(System.out::println);
+
+🤔 Difference Between transform and compose?
+transform applies the transformation once at assembly time.
+compose (from older versions) applies the transformation dynamically at subscription time.
+
+Reactor doesn’t use Subject, but uses the Sinks API, like:
+
+Sinks.many().multicast()
+Sinks.many().unicast()
+Sinks.one() – for a single value (like Mono)
+Sinks.many().replay() – like ReplaySubject in RxJava
+
+Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
+Flux<String> flux = sink.asFlux();
+
+flux.subscribe(s -> System.out.println("Subscriber 1: " + s));
+flux.subscribe(s -> System.out.println("Subscriber 2: " + s));
+
+sink.tryEmitNext("Hello");
+sink.tryEmitNext("World");
+
+R2DBC
+public interface BookRepository extends ReactiveCrudRepository<Book, String> {
+    Flux<Book> findByAuthor(String author);
+}
+
+Flux.just("A", "B", "C")
+    .flatMap(letter ->
+        Flux.just(1, 2).map(i -> letter + i).delayElements(Duration.ofMillis(10))
+    )
+    .subscribe(System.out::println);
+
+Flux.just("A", "B", "C")
+    .concatMap(letter ->
+        Flux.just(1, 2).map(i -> letter + i).delayElements(Duration.ofMillis(10))
+    )
+    .subscribe(System.out::println);
+
+
+Feature	                                              flatMap                                   	concatMap
+🔄 Ordering preserved?                   	❌ No (interleaving possible)	           ✅ Yes (output is in input order)
+🚀 Concurrency	                       ✅ Concurrent (parallel inner publishers)	   ❌ Sequential (one after another)
+🕒 When to use	                           When order doesn’t matter, need speed	  When order matters, and latency is okay
+💥 Backpressure (RxJava) 	              Buffered and fast, but risk of overflow	       Naturally throttles by waiting
+
+Reactive Systems: Driven by the principles described in the Reactive Manifesto: responsiveness, resilience, message-driven, and elasticity.
+
+Resilience Building Blocks
+
+Replication
+What? Duplication of components like databases, services is automatically performed. This enables graceful degradation and load balancing.
+
+How?
+
+Framework: Tools like Akka Cluster manage replica distribution in a consistent manner.
+Code Example: In Akka, clusters are formed with only a few lines of code.
+
+Containment
+What? Mechanisms are in place to confine failures to limited sections of the system, preventing cascading failures.
+
+How?
+Framework: Grid systems like AWS Lambda and Azure Functions isolate operations. Actor systems like Akka use mailboxes or supervision strategies.
+
+Elasticity
+
+What? The system can dynamically adapt its resource allocation in response to varying workloads or failures.
+
+How?
+
+Framework: Cloud-based providers or tools like Kubernetes oversee resource allocation and may scale components accordingly.
+Code Example: In Akka Cluster, the minimum and maximum number of nodes can be configured to auto-scale, requiring no explicit code.
+
+Messaging
+
+What? Asynchronous, message-based communication ensures loose coupling and buffering, enabling resilience during temporary failures.
+
+How?
+
+Framework: Tools like Kafka or RabbitMQ offer reliable message queuing and retention.
+Code Example: In Spring Boot with Spring Cloud Stream and Kafka, setting up a message listener with retries is simple.
+
+Event Logs
+
+What? Systems maintain a log of recent events, which can be used for recovery or auditing.
+
+How?
+
+Framework: Apache Kafka and other similar tools offer durable event streams.
+Code Example: In Kafka, producers are configured to send data to a Kafka topic.
+
+
+Command Query Responsibility Segregation (CQRS) is especially effective in the context of reactive systems. It separates read and write operations to better model real-world interactions.
+
+Benefits
+
+Scalability: Focus resources on either reads or writes.
+Flexibility: Tailor data storage for optimum performance during reads and writes.
+Complex Model Support: Optimally processes commands and updates queries for complex models.
+Key Components
+
+Command: Initiates data changes. Example: a purchase request in an e-commerce system.
+Event: Captures change. Generated in response to a command. Example: an order-placed event.
+Aggregate: Encapsulates data and behavior specific to a domain entity. Acts as a procedural boundary that handles commands and generates events.
+Commands Model: Orchestrates commands from the user interface to aggregates.
+Queries Model: Gathers information, typically through views, to satisfy query requests.

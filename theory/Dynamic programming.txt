@@ -1,0 +1,220 @@
+0/1 Knapsack pattern
+https://leetcode.com/problems/partition-equal-subset-sum/
+
+Unbounded Knapsack pattern
+https://leetcode.com/problems/coin-change/
+
+Longest Common Subsequence
+https://leetcode.com/problems/longest-common-subsequence/
+
+Longest Increasing subsequence
+https://leetcode.com/problems/longest-increasing-subsequence/
+
+Grid DP
+https://leetcode.com/problems/unique-paths/
+
+-------------------------------------------------------------------------------
+
+## 🧠 Personalized Dynamic Programming Cheat Sheet
+
+### ✅ 1. 0/1 Knapsack Pattern
+
+* **Use When**: Choose to include/exclude an item under constraints.
+* **Template**:
+
+```python
+# Python
+for item in items:
+    for cap in reversed(range(weight, total + 1)):
+        dp[cap] = max(dp[cap], dp[cap - weight] + value)
+```
+
+```java
+// Java
+for (int i = 0; i < n; i++) {
+    for (int w = capacity; w >= weights[i]; w--) {
+        dp[w] = Math.max(dp[w], dp[w - weights[i]] + values[i]);
+    }
+}
+```
+
+* **Leetcode**: Partition Equal Subset Sum, Target Sum
+
+---
+
+### ✅ 2. Unbounded Knapsack Pattern
+
+* **Use When**: Items can be picked multiple times.
+* **Template**:
+
+```python
+for coin in coins:
+    for x in range(coin, amount + 1):
+        dp[x] = min(dp[x], dp[x - coin] + 1)
+```
+
+```java
+for (int coin : coins) {
+    for (int i = coin; i <= amount; i++) {
+        dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+    }
+}
+```
+
+* **Leetcode**: Coin Change, Rod Cutting
+
+---
+
+### ✅ 3. Longest Common Subsequence (LCS)
+
+* **Use When**: Compare two sequences.
+* **Template**:
+
+```python
+dp = [[0]*(n+1) for _ in range(m+1)]
+for i in range(m):
+    for j in range(n):
+        if A[i] == B[j]:
+            dp[i+1][j+1] = dp[i][j] + 1
+        else:
+            dp[i+1][j+1] = max(dp[i][j+1], dp[i+1][j])
+```
+
+```java
+for (int i = 1; i <= m; i++) {
+    for (int j = 1; j <= n; j++) {
+        if (a.charAt(i-1) == b.charAt(j-1))
+            dp[i][j] = dp[i-1][j-1] + 1;
+        else
+            dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+}
+```
+
+* **Leetcode**: Longest Common Subsequence, Edit Distance
+
+---
+
+### ✅ 4. Longest Increasing Subsequence (LIS)
+
+* **Use When**: Find ordered subsequences.
+* **Template**:
+
+```python
+import bisect
+sub = []
+for x in nums:
+    i = bisect.bisect_left(sub, x)
+    if i == len(sub): sub.append(x)
+    else: sub[i] = x
+```
+
+```java
+int[] dp = new int[n];
+int len = 0;
+for (int num : nums) {
+    int i = Arrays.binarySearch(dp, 0, len, num);
+    if (i < 0) i = -(i + 1);
+    dp[i] = num;
+    if (i == len) len++;
+}
+```
+
+* **Leetcode**: LIS, Number of LIS
+
+---
+
+### ✅ 5. Grid-Based DP
+
+* **Use When**: Paths on grids.
+* **Template**:
+
+```python
+dp = [[1]*n for _ in range(m)]
+for i in range(1, m):
+    for j in range(1, n):
+        dp[i][j] = dp[i-1][j] + dp[i][j-1]
+```
+
+```java
+int[][] dp = new int[m][n];
+for (int i = 0; i < m; i++) dp[i][0] = 1;
+for (int j = 0; j < n; j++) dp[0][j] = 1;
+for (int i = 1; i < m; i++) {
+    for (int j = 1; j < n; j++) {
+        dp[i][j] = dp[i-1][j] + dp[i][j-1];
+    }
+}
+```
+
+* **Leetcode**: Unique Paths, Minimum Path Sum
+
+---
+
+### ✅ 6. Palindromic Substrings
+
+* **Use When**: Substrings with mirrored symmetry.
+* **Template**:
+
+```python
+for i in range(n-1, -1, -1):
+    for j in range(i, n):
+        if s[i] == s[j] and (j-i < 2 or dp[i+1][j-1]):
+            dp[i][j] = True
+```
+
+* **Leetcode**: Longest Palindromic Substring, Palindrome Partitioning
+
+---
+
+### ✅ 7. Tree DP
+
+* **Use When**: Subtree decisions (bottom-up).
+* **Template**:
+
+```python
+def dfs(node):
+    for child in node.children:
+        left = dfs(child)
+        ...
+    return dp
+```
+
+* **Leetcode**: House Robber III, Binary Tree Cameras
+
+---
+
+### ✅ 8. Bitmask DP
+
+* **Use When**: Track subsets with binary masks.
+* **Template**:
+
+```python
+@lru_cache(None)
+def dp(mask, pos):
+    for i in range(n):
+        if mask & (1 << i) == 0:
+            dp(new_mask, new_pos)
+```
+
+* **Leetcode**: Traveling Salesman, Minimum Path to Visit All Nodes
+
+---
+
+### ✅ 9. Sliding Window + DP
+
+* **Use When**: Optimize with recent `k` elements.
+* **Template**:
+
+```python
+from collections import deque
+for i in range(n):
+    while dq and invalid(dq[0]): dq.popleft()
+    dp[i] = nums[i] + dp[dq[0]]
+    while dq and dp[i] >= dp[dq[-1]]: dq.pop()
+    dq.append(i)
+```
+
+* **Leetcode**: Jump Game VI, Sliding Window Maximum
+
+

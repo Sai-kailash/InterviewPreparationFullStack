@@ -1,0 +1,25 @@
+🔁 Forward Proxy Uses
+Use Case	Description
+🔒 Anonymity & Privacy	Hides the client’s IP from target servers, masking the identity/location.
+🌍 Access Control	Restricts access to specific websites or IPs—commonly used in corporations or schools.
+🌐 Content Filtering	Filters out unwanted or malicious content (e.g., ads, adult sites).
+🚫 Bypass Geo-Restrictions	Helps users access region-locked content (e.g., U.S.-only websites).
+🕵️‍♂️ Monitoring & Logging	Admins can log and monitor user traffic for auditing or security.
+💾 Caching	Stores copies of frequently accessed content to improve load time & reduce bandwidth.
+🧩 Network Address Translation (NAT)	Acts on behalf of multiple clients using a single public IP address.
+🛡 Security Gateway	Scans outgoing requests for malware or data leaks.
+🌐 Corporate Firewalls	Used in conjunction with firewall policies to filter outgoing requests.
+
+
+🔁 Reverse Proxy Uses
+Use Case	Description
+⚖️ Load Balancing	Distributes incoming traffic across multiple backend servers to prevent overloading.
+🛡 Security & Anonymity	Hides internal server details (IP, headers, etc.) from the outside world.
+🔐 SSL Termination	Offloads TLS/SSL decryption from backend servers to improve performance.
+🌐 Caching	Caches responses from servers to reduce latency and server load (e.g., CDN behavior).
+🚦 Request Routing	Routes requests to different servers based on URL path, headers, or load conditions.
+🧩 Compression	Compresses responses before sending to clients to save bandwidth.
+🔁 Global Failover	Redirects traffic if a server is down—used in high availability setups.
+🕵️‍♂️ Traffic Monitoring	Logs, inspects, and audits incoming traffic for metrics or security purposes.
+🧱 Application Firewalling	Filters malicious requests or blocks suspicious behavior (e.g., WAF rules).
+⛓ Authentication Gateway	Centralized auth for all backend services (e.g., SSO, OAuth, token validation).

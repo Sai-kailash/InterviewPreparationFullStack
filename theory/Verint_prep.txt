@@ -1,0 +1,197 @@
+. Core Java & Fundamentals
+
+Data Structures
+Explain the difference between ArrayList and LinkedList. When would you use one over the other?
+How would you implement a custom HashMap?
+What is the time complexity of contains() in a HashSet? Why?
+
+Multithreading
+Explain the difference between synchronized methods and synchronized blocks.
+What are the states of a Java thread?
+How would you avoid race conditions in a multi-threaded environment?
+Difference between ConcurrentHashMap and HashMap in a multi-threaded context.
+
+I/O
+Difference between InputStream and Reader in Java.
+How would you read a large file efficiently without running out of memory?
+
+Java Concepts
+Explain the difference between final, finally, and finalize().
+How does Java handle garbage collection? Can you force it?
+
+
+2. Spring Boot & Web Services
+How does dependency injection work in Spring?
+Explain the difference between @Component, @Service, and @Repository.
+
+How do you secure a REST API in Spring Boot?
+I secure a REST API in Spring Boot by enabling authentication (JWT/OAuth2), enforcing role-based authorization, forcing HTTPS, validating inputs,
+and disabling CSRF for stateless APIs. I also add rate limiting, logging, and monitor access patterns for anomalies.
+
+
+Difference between @RestController and @Controller.
+How do you handle exceptions globally in Spring Boot?
+
+Explain how you would create and consume a REST API that returns JSON.
+I’d use a streaming JSON parser like Jackson’s JsonParser or Gson’s JsonReader to
+read token-by-token or object-by-object without loading the entire file into memory. This keeps the memory footprint small and allows me to process huge files efficiently.
+
+Have you worked with gRPC? How is it different from REST?
+How do you configure connection pooling in Spring Boot with JDBC?
+
+
+3. Debugging, Performance, and Memory
+How would you detect and fix a memory leak in a Java application?
+
+What tools would you use to profile performance in Java?
+1. Built-in JDK Tools
+jconsole – GUI for monitoring heap, threads, and CPU usage.
+jvisualvm – Visual profiling tool for heap dump analysis, CPU usage, GC monitoring.
+jcmd – Command-line tool to trigger GC, get thread dumps, and heap information.
+jstack – Captures thread dumps for deadlock or performance analysis.
+jmap – Gets heap dumps to inspect memory usage and find leaks.
+Java Flight Recorder (JFR) + Java Mission Control (JMC) – Low-overhead profiling and analysis.
+
+
+How do you debug a NullPointerException in production?
+How do you handle deadlocks? Can you write code that demonstrates one?
+Explain an example where you optimized a slow application.
+
+
+4. Problem-Solving & Algorithms
+Write a program to detect if a linked list has a cycle.
+Given a large JSON file, how would you parse it efficiently in Java?
+Find the k largest elements in an unsorted array.
+Implement a thread-safe producer-consumer solution in Java.
+How would you design a system to fetch and aggregate data from multiple REST APIs concurrently?
+
+
+5. Tools & Process
+What’s your experience with Git branching strategies (e.g., GitFlow)?
+How do you configure a Jenkins pipeline for a Java project?
+How would you integrate static code analysis into your CI/CD workflow?
+Difference between Maven and Ant.
+How do you manage dependencies in a multi-module Maven project?
+
+
+6. Behavioral & Leadership
+Describe a challenging debugging issue you faced and how you solved it.
+How do you manage conflict in a team setting?
+How do you mentor junior developers in your team?
+Tell me about a time when you had to quickly learn a new technology to solve a problem.
+
+
+1. Multi-threading
+Q1: Producer–Consumer Problem
+Description:
+Implement a thread-safe producer-consumer system where:
+Producers generate integers from 1 to 100.
+Consumers print them.
+Use BlockingQueue or wait()/notify() (your choice).
+Key Skills Tested:
+Synchronization
+Java concurrency API (java.util.concurrent)
+Avoiding race conditions
+
+
+Q2: Deadlock Demonstration and Fix
+Description:
+Write code that causes a deadlock between two threads.
+Then modify it to avoid the deadlock.
+Key Skills Tested:
+Understanding of locks, synchronization, and ordering
+Debugging deadlocks
+2. Memory & Performance
+
+
+Q3: Detect Memory Leak in a Collection
+Description:
+Simulate a memory leak by:
+Continuously adding objects to a collection without removing them.
+Then, fix it so memory is freed properly.
+Key Skills Tested:
+Java memory model
+Garbage collection awareness
+Profiling thought process
+
+
+Q4: Large File Processing
+Description:
+Read a 1 GB text file and:
+Count the number of occurrences of each word.
+Do it in a memory-efficient way.
+Key Skills Tested:
+I/O streams
+Buffered reading
+Avoiding OutOfMemoryError
+3. Spring Boot REST API
+
+
+Q5: Basic CRUD API
+Description:
+Create a Spring Boot application with:
+An endpoint /movies to POST and GET movies.
+Use an in-memory H2 database.
+Include basic validation and exception handling.
+Key Skills Tested:
+Spring Boot annotations (@RestController, @PostMapping, @GetMapping)
+Spring Data JPA
+Exception handling (@ControllerAdvice)
+
+
+Q6: Concurrent REST Calls
+Description:
+You have 3 REST APIs:
+GET http://api1.example.com/data
+GET http://api2.example.com/data
+GET http://api3.example.com/data
+Fetch data from all three concurrently and merge the results.
+Key Skills Tested:
+
+CompletableFuture
+Asynchronous REST calls (WebClient or RestTemplate with async)
+Thread pool usage
+4. Algorithms
+
+
+Q7: Top-K Frequent Elements
+Description:
+Given an integer array, return the k most frequent elements.
+Key Skills Tested:
+
+PriorityQueue / Heap
+HashMap frequency counting
+Time complexity reasoning
+
+
+Q8: Detect Cycle in Linked List
+Description:
+Given the head of a linked list, determine if there is a cycle.
+Key Skills Tested:
+
+Floyd’s Cycle Detection Algorithm
+Pointer manipulation
+Space complexity optimization
+5. Bonus – System Design Thinking
+
+
+Q9: URL Shortener Design (High Level)
+Description:
+Sketch a system design for a URL shortener like bit.ly.
+Discuss data storage.
+Explain REST endpoints.
+Handle scalability.
+Key Skills Tested:
+REST API design
+Database schema thinking
+Scalability awareness
+
+Given an integer array nums return the next greater number for every element in nums.
+
+The next greater number of a number x is the first greater number to its traversing-order next in the array. If it doesn't exist, return -1 for this number.
+
+Input : [1,2,1]
+Output : [2,-1,-1]
+
+Input : [1,2,3,4,3]
+Output : [2,3,4,-1,-1]

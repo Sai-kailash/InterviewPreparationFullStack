@@ -1,0 +1,373 @@
+ZooKeeper Metadata Hierarchy
+/
+├── brokers
+│   ├── ids                    # Active brokers
+│   │   ├── 1 -> {host,port}
+│   │   ├── 2 -> {host,port}
+│   │   └── 3 -> {host,port}
+│   │
+│   ├── topics                 # Topic metadata
+│   │   ├── topic1
+│   │   │   └── partitions
+│   │   │       ├── 0 -> {leader,ISR}
+│   │   │       └── 1 -> {leader,ISR}
+│   │   └── topic2
+│   │
+│   └── seqid                  # Broker sequence IDs
+│
+└── config                     # Configurations
+    ├── topics
+    └── clients
+	
+	
+
+Docker Image Layers
+┌─────────────────────────┐
+│    Application Code     │  <- Your application
+├─────────────────────────┤
+│    Dependencies        │  <- Libraries, frameworks
+├─────────────────────────┤
+│    Runtime             │  <- Node.js, Python, Java
+├─────────────────────────┤
+│    System Libraries    │  <- SSL, SSH, etc.
+├─────────────────────────┤
+│    Base OS Layer       │  <- Alpine, Ubuntu, etc.
+└─────────────────────────┘
+
+Docker Image Format
+┌─────────────────────────┐
+│    manifest.json        │  <- Image metadata and layer info
+├─────────────────────────┤
+│    config.json         │  <- Container configuration
+├─────────────────────────┤
+│    layer1.tar         │  <- Base layer (compressed)
+├─────────────────────────┤
+│    layer2.tar         │  <- Additional layers
+├─────────────────────────┤
+│    layer3.tar         │  <- Application layer
+└─────────────────────────┘
+
+Alexu - System design
+
+
+Amazon EKS Cluster
+│
+├── Control Plane (Managed by AWS)
+│   ├── API Server
+│   ├── etcd (Key-Value Store)
+│   ├── Controller Manager
+│   └── Scheduler
+│
+├── Worker Nodes
+│   ├── Managed Node Groups
+│   │   ├── Node 1
+│   │   │   ├── kubelet
+│   │   │   ├── kube-proxy
+│   │   │   └── Container Runtime (Docker/containers)
+│   │   │       └── Pods
+│   │   │           ├── Pod 1
+│   │   │           │   ├── Container 1
+│   │   │           │   └── Container 2
+│   │   │           └── Pod 2
+│   │   └── Node 2
+│   │       └── [Similar structure as Node 1]
+│   │
+│   ├── Self-Managed Nodes
+│   │   └── [Similar structure as Managed Node Groups]
+│   │
+│   └── Fargate Profiles (Serverless)
+│       └── Pods
+│           └── [Similar structure as Node Pods]
+│
+├── Networking
+│   ├── VPC
+│   │   ├── Public Subnets
+│   │   └── Private Subnets
+│   ├── Security Groups
+│   └── Load Balancers
+│       ├── Application Load Balancer (ALB)
+│       ├── Network Load Balancer (NLB)
+│       └── Classic Load Balancer (CLB)
+│
+├── Storage
+│   ├── Amazon EBS
+│   ├── Amazon EFS
+│   └── Amazon FSx
+│
+└── Add-ons
+    ├── AWS Load Balancer Controller
+    ├── Amazon VPC CNI
+    ├── CoreDNS
+    ├── kube-proxy
+    └── Cluster Autoscaler
+
+
+✅ Primary Role of the Scheduler
+📌 Assign unscheduled Pods to suitable Nodes
+🔄 How It Works (Step-by-Step)
+Pod Creation
+A new Pod is created (by a user, Deployment, etc.), and it's in a Pending state because it's not yet assigned to any Node.
+Scheduler Detects Unscheduled Pod
+The Scheduler watches the API Server and detects the unscheduled Pod.
+Node Filtering
+It filters out Nodes that do not meet the Pod’s requirements:
+Not enough CPU/memory
+Doesn’t match node selectors, taints, tolerations, affinity rules, etc.
+Node Scoring
+From the filtered nodes, it scores them based on:
+Resource availability (least requested, balanced usage)
+Pod affinity/anti-affinity
+Node priority
+Custom policies (via scheduler plugins)
+Node Selection
+The highest-scoring Node is selected.
+Binding
+The Scheduler binds the Pod to the selected Node by updating the Pod's .spec.nodeName field via the API Server.
+
+
+
+🔸 Example ZNode Paths in ZooKeeper
+ZNode Path	Meaning
+/brokers/ids/	Registered brokers
+/brokers/topics/	Topic and partition info
+/controller	Current controller broker
+/admin/delete_topics/	Topics marked for deletion
+/config/topics/[topic]	Topic-specific configs
+
+
+🔷 ✅ Primary Duties of the Controller Node:
+🔄 Partition Leader Election
+Chooses which broker will be the leader for each partition.
+Ensures a single leader per partition at all times.
+If a leader broker crashes, the controller elects a new leader from the in-sync replicas (ISR).
+📋 Cluster Metadata Management
+Maintains and updates metadata about brokers, topics, partitions, and replicas.
+Notifies all other brokers about metadata changes (e.g., new brokers, topic creation).
+🚨 Broker Failure Detection
+Watches /brokers/ids in ZooKeeper (in ZK mode) to detect if a broker crashes or is deregistered.
+Triggers leader re-election and updates ISR if a broker goes down.
+🗂 Topic and Partition Management
+Manages topic creation/deletion (from admin APIs or ZK changes).
+Allocates partitions across brokers during topic creation (based on replication and partition settings).
+🔁 Re-replication and Recovery
+Coordinates re-replication when a broker comes back online.
+Ensures data consistency and replica synchronization.
+🧠 Interacts with ZooKeeper (pre-KRaft)
+Stores metadata and gets notifications via ZK watches.
+Registers itself in /controller znode.
+
+
+✅ 1. What is log compaction in Kafka?
+Log compaction is a Kafka feature that retains only the latest value for each unique key in a topic.
+
+Unlike regular log retention (based on time or size), log compaction:
+Keeps the most recent message per key
+Deletes older messages with the same key
+Useful for state recovery, changelog topics, idempotent updates
+Example use case: A user profile service where you only need the latest user data per user ID.
+
+✅ 2. What is Kafka MirrorMaker?
+Kafka MirrorMaker is a tool used to replicate Kafka topics across clusters (often across data centers).
+
+Copies messages from a source cluster to a target cluster
+Used for:
+Disaster recovery
+Geo-replication
+Multi-region setups
+Available in:
+MirrorMaker 1: Simple, CLI-based
+MirrorMaker 2: Part of Kafka Connect, more robust and supports topic renaming, offset syncing, etc.
+✅ 3. What is a Kafka Schema Registry?
+Schema Registry is a separate service used to manage Avro, JSON, or Protobuf schemas for Kafka topics.
+
+Ensures producer and consumer compatibility
+Stores versions of schemas
+Prevents schema-breaking changes
+Commonly used with Confluent Kafka
+Example: If a producer sends Avro-encoded messages, the Schema Registry holds the schema so that consumers can deserialize correctly.
+
+✅ 4. Differences Between Kafka vs RabbitMQ/JMS
+Feature	Kafka	RabbitMQ/JMS
+Model	Log-based, pull	Message queue, push
+Storage	Durable, persistent log	Messages deleted once delivered
+Consumer Type	Consumer groups (scalable)	Competing consumers
+Ordering	Guaranteed within partition	Not guaranteed
+Throughput	High	Moderate
+Replayability	Yes (due to log)	No (unless explicitly stored)
+Use Case	Stream processing, event sourcing	Task queues, RPC, short-lived jobs
+✅ 5. Design Fault-Tolerant Kafka Architecture
+3+ Brokers (odd number for quorum)
+Multiple Partitions per topic (for parallelism)
+Replication Factor ≥ 3
+Enable unclean.leader.election = false (to prevent data loss)
+Use Zookeeper (or KRaft in newer versions) with redundancy
+Set up Monitoring (Prometheus + Grafana) and Alerting
+Use Kafka Connect / MirrorMaker for cross-DC redundancy
+Enable ACKs=all on producers and min.insync.replicas ≥ 2
+Use idempotent producers and exactly-once semantics (EOS) if needed
+✅ 6. How to Improve Throughput of a Remote Kafka Consumer
+Increase fetch.max.bytes and fetch.min.bytes
+Tune max.poll.records for batch processing
+Enable compression on producer (e.g., lz4, snappy)
+Use multiple consumer threads/instances
+Use consume-process-ack pattern to decouple work
+Consider Kafka Connect or MirrorMaker to move data closer to consumer
+Adjust socket.buffer.size and batch size for network optimization
+✅ 7. Leader and Follower in Kafka
+Every partition in Kafka has a single leader and zero or more followers
+Leader handles all read and write requests
+Followers replicate data from the leader
+If the leader fails, a follower is promoted (if in-sync)
+This ensures replication and fault tolerance
+✅ 8. Purpose of Partitioning in Kafka
+Parallelism: Multiple consumers can process data in parallel
+Scalability: Each partition can be processed independently
+Ordering: Kafka guarantees message order within a partition
+Fault tolerance: Partitions are replicated across brokers
+Load balancing: Distributes data across brokers
+Key-based partitioning ensures all events with the same key go to the same partition (important for stateful consumers).
+
+✅ 1. How does Kafka handle message ordering and consistency?
+Ordering: Kafka guarantees message order within a partition, not across partitions.
+Consistency:
+Writes go to a partition leader.
+Kafka ensures write consistency via acks and min.insync.replicas.
+Use key-based partitioning to ensure all messages with the same key go to the same partition.
+✅ 2. How does Kafka achieve fault tolerance?
+Replication: Each partition has one leader and multiple followers.
+If a leader fails, a follower from the ISR (in-sync replicas) is promoted.
+ZooKeeper (or KRaft in newer versions) manages leader election and metadata.
+Producers/consumers can reconnect and resume with offsets.
+✅ 3. How does Kafka handle data replication?
+Every partition has a replication factor (typically ≥ 3).
+The leader handles reads/writes.
+Followers replicate the leader's data asynchronously.
+ISR (In-Sync Replicas): followers that are caught up with the leader.
+Kafka can prevent unclean leader elections (unclean.leader.election = false) to avoid data loss.
+✅ 4. How does Kafka handle message retention and deletion?
+Based on time (retention.ms) or log size (retention.bytes)
+Supports:
+Delete-based retention (delete old logs)
+Log compaction (retain latest message per key)
+Can be configured per topic
+✅ 5. Message Delivery Semantics in Kafka
+Semantic	Description
+At-most-once	Message might be lost (no retry); fast but risky
+At-least-once	Messages retried if not acknowledged; duplicates possible
+Exactly-once	Guarantees no loss, no duplicates using idempotent producers and transactional APIs (since Kafka 0.11)
+✅ 6. How to Monitor and Troubleshoot Kafka in Production
+Tools & Metrics:
+
+Monitoring Tools: Prometheus + Grafana, Confluent Control Center, Burrow, Kafka Manager
+Important Metrics:
+Broker: CPU, memory, disk usage
+Topics: ISR lag, under-replicated partitions
+Consumer lag
+Network I/O
+Troubleshooting:
+Use logs (/logs/ on broker)
+Check zookeeper/kraft health
+Diagnose lag via consumer group metrics
+Validate throughput, GC pauses, disk IO
+✅ 7. How does Kafka ensure high throughput and low latency?
+Batching: Producer batches messages before sending
+Compression: Reduces payload size (snappy, lz4, zstd)
+Zero-copy: Uses sendfile() to bypass kernel/user space copy
+Partitioned writes: Enables parallelism
+Async replication and I/O
+Sequential disk writes: Append-only logs = fast disk I/O
+✅ 8. Real-World Use Cases of Kafka
+Real-time analytics (clickstream, fraud detection)
+Log aggregation
+Metrics and monitoring pipelines
+Order and inventory systems
+Microservices communication
+Data lake ingestion
+Event sourcing
+IoT stream processing
+✅ 9. How does Kafka handle backpressure?
+Kafka doesn't directly handle it, but allows systems around it to:
+
+Producers can slow down or block when the broker’s buffer.memory is full.
+Consumers can control rate via max.poll.records, pause()/resume()
+Brokers can apply quotas (see next point)
+Use buffering and rate-limiting to manage spikes
+✅ 10. What are Kafka Quotas?
+Kafka supports rate limiting via quotas:
+
+Producer quotas: Control write rate (bytes/sec)
+Consumer quotas: Control read rate
+Client-id based quotas for fine-grained control
+Configured per user/client to ensure fair usage in multi-tenant environments
+✅ 11. Benefits of Using Kafka Clusters
+Horizontal scalability
+High availability (via replication)
+Fault tolerance
+Partitioning for parallelism
+Durable storage
+Reprocessing & replaying messages
+Decouples producers and consumers
+Supports real-time & batch processing
+✅ 12. How does Kafka handle multi-tenancy?
+Topic-level isolation for different teams/projects
+Access control via ACLs
+Authentication/Authorization (SASL, SSL)
+Quotas to prevent resource hogging
+Use dedicated partitions or namespaces (with Confluent Platform or custom naming)
+
+
+Typically, Apache Avro is used for serialization because it supports rich data structures and compact binary encoding, and works well with schema evolution.
+The Schema Registry stores all schemas (by ID) and enforces compatibility rules.
+
+Schema evolution refers to the ability to change the structure of your data (schema) — e.g., adding/removing fields — without breaking existing consumers or producers.
+
+✅ Kafka + Avro + Schema Registry
+
+Typically, Apache Avro is used for serialization because it supports rich data structures and compact binary encoding, and works well with schema evolution.
+
+The Schema Registry stores all schemas (by ID) and enforces compatibility rules.
+
+🔄 Common Schema Changes (Evolutions)
+
+Change Type	Backward Compatible?	Forward Compatible?
+Adding a field with default	✅ Yes	✅ Yes
+Removing a field with default	✅ Yes	✅ Yes
+Renaming a field	❌ No	❌ No
+Changing field type	❌ No (usually)	❌ No (usually)
+Adding a new required field (no default)	❌ No	❌ No
+🔒 Compatibility Types in Schema Registry
+
+You can set these at the subject level (subject = topic name):
+
+Compatibility Level	Description
+BACKWARD	New schema can read old data
+FORWARD	Old schema can read new data
+FULL	Both backward and forward compatible
+NONE	No compatibility checks
+
+🛠️ How Kafka Uses Schema IDs
+
+When a producer sends a message, it includes the schema ID from the Schema Registry in the message payload.
+The consumer retrieves this schema ID and fetches the corresponding schema from the registry to deserialize.
+
+📌 Summary
+
+Kafka supports schema evolution via Schema Registry (Avro/Protobuf/JSON).
+Compatibility rules determine if changes are safe.
+Schema IDs are stored in Kafka message headers.
+Allows independent deployment of producers and consumers.
+
+
+Feature                                  	AWS S3	                          Azure Blob Storage                          	Google Cloud Storage (GCS)
+Durability	                             99.999999999% (11 9s)	              99.999999999% (11 9s)	                          99.999999999% (11 9s)
+Availability (Standard)	                    99.99%	                            99.9–99.99%                                     	99.99%
+Latency                                   	Fast, global network	        Fast, but more region-dependent	                  Very low latency (especially in US)
+Throughput	                        Very high (scales automatically)	    Scales well but depends on SKU	                   Auto-scales, very fast
+Storage Tiers	                     Standard, IA, One Zone, Glacier	        Hot, Cool, Archive	                          Standard, Nearline, Coldline, Archive
+Lifecycle Management	                      Very flexible	                    Flexible	                              Very flexible
+SDK and CLI Support	                             Excellent	                    Very good	                              Very good
+Ecosystem Integration                   	Best with AWS services           	Best with Azure	                               Best with GCP
+Pricing (Standard Tier)	            Slightly more expensive	                    Competitive	                             Often cheapest (region-specific)
+Object Size Limit	                        5 TB	                            4.75 TB	                                      5 TB
+Multipart Upload	                          Yes	                             Yes	                                      Yes
+Security & IAM	                        Mature and fine-grained	              Integrated with Azure AD	                  IAM integrated

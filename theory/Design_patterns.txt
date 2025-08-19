@@ -1,0 +1,28 @@
+Behavioral Patterns
+
+| Pattern                     | Purpose                                                                                |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| **Observer**                | One-to-many dependency (e.g., event systems, UI listeners).                            |
+| **Strategy**                | Define a family of algorithms, make them interchangeable (e.g., sorting, compression). |
+| **Command**                 | Encapsulate a request as an object (e.g., undo/redo).                                  |
+| **State**                   | Change behavior when internal state changes.                                           |
+| **Template Method**         | Define skeleton of an algorithm; defer steps to subclasses.                            |
+| **Iterator**                | Access elements of a collection without exposing its structure.                        |
+| **Mediator**                | Central object that handles communication between components.                          |
+| **Chain of Responsibility** | Pass request along a chain until one handles it.                                       |
+| **Visitor**                 | Add operations to objects without modifying them.                                      |
+| **Interpreter**             | Evaluate expressions based on a grammar (e.g., SQL parser).                            |
+
+
+
+Structural Patterns
+
+| Pattern       | Purpose                                                                       |
+| ------------- | ----------------------------------------------------------------------------- |
+| **Adapter**   | Converts one interface to another (e.g., legacy class to new interface).      |
+| **Decorator** | Adds responsibilities to objects **dynamically** (e.g., I/O stream wrappers). |
+| **Proxy**     | Surrogate or placeholder to control access (e.g., lazy loading, security).    |
+| **Facade**    | Provides a simplified interface to a complex subsystem.                       |
+| **Composite** | Treat individual and group of objects uniformly (e.g., UI trees).             |
+| **Bridge**    | Decouples abstraction from implementation.                                    |
+| **Flyweight** | Shares common data to save memory (e.g., game objects, font caching).         |

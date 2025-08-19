@@ -1,0 +1,494 @@
+🔧 Angular (Frontend Tech Depth + Design)
+
+1. How do you design a scalable Angular architecture for a large enterprise application?
+
+1. Modular Architecture
+Split the application into feature modules (UserModule, OrdersModule, AdminModule, etc.).
+Use lazy loading for non-critical routes to reduce initial bundle size.
+Keep shared utilities, pipes, and services in a SharedModule.
+2. Component Structure
+Break UI into reusable components (container/presentational pattern).
+Follow Single Responsibility Principle: each component should have one purpose.
+3. State Management & Caching
+Use services with providedIn: 'root' for singleton services.
+Cache tenant/environment-specific config in a service or APP_INITIALIZER. (localStorage and SessionStorage and Service cache)
+For large apps, consider NgRx or Akita for predictable state management.
+4. Performance Optimization
+Use ChangeDetectionStrategy.OnPush wherever applicable.
+Use trackBy in *ngFor to avoid re-rendering.
+Memoize and debounce in reactive forms and autocomplete inputs.
+5. Custom Pipes & Filters
+Implement Pipe and PipeTransform for reusable formatting/filtering logic.
+Pure pipes help Angular avoid unnecessary re-computations.
+6. Build Optimization
+Configure angular.json to include only necessary dependencies.
+Use lazy-loaded modules and differential loading.
+Apply tree-shaking and minification in production builds.
+7. Backend/API Integration
+Connect to APIs hosted on EC2 with Auto Scaling or behind an API Gateway.
+Use Angular’s HttpClient with interceptors for auth tokens, logging, retry, headers, etc.
+8. Security and Auth
+Implement role-based access control (RBAC) on the frontend.
+Guard routes using CanActivate and CanLoad.
+Tokens (JWT, OAuth2) are handled securely with interceptors and HttpOnly cookies or headers.
+9. Scalability and Maintainability
+Use strict TypeScript settings and linting for early error detection.
+Follow a well-defined folder structure and use SCSS/BEM for scalable styling.
+Document reusable components and follow Angular Style Guide.
+💡 Bonus: Monitoring & CI/CD
+Integrate logging & monitoring using Sentry, LogRocket, or custom analytics.
+Automate testing (Jest/Karma) and deployment pipelines via Jenkins/GitHub Actions.
+
+Summary Table
+Concern	                                 Best Practice
+Modularity	                   Lazy-loaded modules, shared utilities
+Performance	                      OnPush, memoization, trackBy
+Reusability	                  Pipes, services, presentational components
+Build Size	                    Tree shaking, differential loading
+Auth/Security	                  Route guards, RBAC, interceptors
+API Performance	                   EC2/ASG + ALB + Interceptors
+Maintainability	                Linting, strict typing, style guide
+
+
+====================================================================================================================================
+2. Explain the difference between Reactive Forms and Template-Driven Forms. When would you use each?
+
+| Feature       | **Reactive Forms**                                   | **Template-Driven Forms**            |
+| ------------- | ---------------------------------------------------- | ------------------------------------ |
+| Form Model    | Defined in **TypeScript (Component class)**          | Defined in **HTML template**         |
+| Data Flow     | **Explicit & Immutable**                             | **Implicit & Mutable**               |
+| Control       | Programmatic, fine-grained                           | Declarative, simple                  |
+| Validation    | Synchronous & asynchronous handled in code           | Handled in template using directives |
+| Scalability   | Better for **complex and large forms**               | Better for **simple forms**          |
+| Observability | Fully observable via `valueChanges`, `statusChanges` | Limited observability                |
+| Testing       | Easier to unit test                                  | Harder to isolate and test           |
+
+
+✅ 2. Reactive Forms (Model-Driven)
+
+Key Characteristics:
+Defined and structured in the component class using FormGroup, FormControl, and FormBuilder.
+Allows advanced dynamic validations, conditional rendering, and reactive programming via RxJS.
+You subscribe to changes via .valueChanges or .statusChanges.
+
+When to Use:
+Complex validation logic (cross-field validation, dynamic fields)
+Need for high scalability and reusability
+When using reactive patterns (RxJS streams)
+
+✅ 3. Template-Driven Forms
+
+Key Characteristics:
+Logic is mostly declared in the template using directives like ngModel, required, #form="ngForm".
+Simpler and more readable for basic forms.
+Less boilerplate, but also less control and observability.
+
+When to Use:
+Simple forms with minimal validation
+Prototypes, quick proof of concepts
+Developer is more comfortable working in templates than TypeScript
+
+====================================================================================================================================
+
+How do you handle performance bottlenecks in Angular apps?
+
+1. 🔄 Optimize Change Detection
+Use ChangeDetectionStrategy.OnPush to reduce unnecessary checks.
+Use markForCheck() and detach() wisely when manual control is needed.
+Avoid triggering changes via global events like setInterval, setTimeout unnecessarily.
+
+2. 📦 Lazy Load Modules
+Split large apps into feature modules and load them lazily via the router.
+Reduces initial bundle size and improves load time.
+
+3. 🧠 Avoid Memory Leaks
+Unsubscribe from Observables (use takeUntil, AsyncPipe, Subscription.unsubscribe()).
+Use ngOnDestroy lifecycle hook to clean up event listeners, timeouts, etc.
+
+4. 🧭 Efficient DOM Rendering
+Use trackBy in *ngFor to avoid full re-rendering.
+
+5. 🚀 Use On-Demand Data Loading (Pagination, Virtual Scrolling)
+Load large datasets incrementally.
+Use Angular CDK’s VirtualScroll for rendering long lists efficiently.
+
+
+6. 💾 Avoid Overuse of LocalStorage/SessionStorage
+Use storage only for lightweight, non-sensitive data.
+Avoid storing large JSON payloads which can slow down the UI.
+
+7. 🧱 Tree Shaking & Bundle Optimization
+Use --prod flag for builds (ng build --prod) to enable tree shaking.
+Avoid importing entire libraries when only a few utilities are needed.
+
+8. 🔍 Use Performance Monitoring Tools
+Use Chrome DevTools, Angular DevTools, or Lighthouse to analyze component lifecycles, re-renders, and runtime performance.
+9. 🧩 Avoid Heavy Third-party Dependencies
+Minimize external libraries and use only what’s essential.
+Prefer native Angular features (e.g., HttpClient, RxJS) over third-party wrappers.
+10. 🛡️ Optimize API Calls
+Debounce user input (e.g., search boxes).
+Use caching for rarely changing data.
+Minimize payload size (avoid sending unused fields).
+
+✅ Example Summary for Interviews
+“I improve Angular performance by optimizing change detection using OnPush, implementing lazy-loaded modules, minimizing unnecessary re-renders with trackBy,
+and handling memory efficiently through proper unsubscription patterns.
+I also keep bundles lean using tree shaking and avoid large data usage in local/session storage. Lastly, I use profiling tools to continuously monitor runtime performance.”
+
+====================================================================================================================================
+
+How would you implement role-based access in Angular?
+
+| Layer       | Implementation                           |
+| ----------- | ---------------------------------------- |
+| Routing     | `canActivate` with `RoleGuard`           |
+| UI Elements | `*ngIf` or custom `*hasRole` directive   |
+| State Mgmt  | `AuthService` with observable user roles |
+| Token-Based | JWT decoded roles                        |
+| Backend     | Validate role on every API call          |
+
+====================================================================================================================================
+
+Explain the change detection mechanism in Angular. How can it be optimized?
+
+Refer to Angular cheat sheet
+
+====================================================================================================================================
+
+
+🔄 Reactive Java (Project Reactor, RxJava)
+What is backpressure, and how do you handle it in Project Reactor? -- Refer to reactive cheat sheet
+
+====================================================================================================================================
+When would you choose flatMap over concatMap in a reactive pipeline?
+FlatMap will be used when we required speed during mapping
+Unsynchronized data
+When you do not want the order of the data from the stream
+
+====================================================================================================================================
+How do you debug reactive flows?
+
+Debugging Tools
+
+Logging: Many operators provide logging capabilities, like doOnNext() or doOnError().
+Assertions: Use operators such as take(), limit() and timeout() to make sure your stream respects certain conditions.
+Schedulers: PublishOn and SubscribeOn allow you to control what parts of your stream happen where to provide additional insights.
+
+====================================================================================================================================
+Describe how you would implement retries with exponential backoff.
+
+In Project Reactor, you can implement retries with exponential backoff using the retryWhen() operator along with Flux delay techniques like Flux.interval() or Mono.delay().
+
+Exponential backoff means:
+
+Retry after increasing delays: e.g., 1s, 2s, 4s, 8s...
+Helps avoid overwhelming a failing system
+Often used with network calls, HTTP, database access, etc.
+
+.retryWhen(Retry.backoff(maxAttempts, initialDelay))
+
+🧠 Best Practices
+
+Combine with .timeout() or .onErrorResume() to avoid infinite retries
+Limit the number of retries (maxAttempts)
+Add jitter (random delay) to prevent retry storms
+
+
+====================================================================================================================================
+What are the trade-offs between reactive and imperative styles?
+
+Calls and Responses
+
+RP: Focuses on data streams and reacts to changes.
+IP: Primarily deals with discrete input and output, often based on method calls.
+Timing and Control
+
+RP: Great for asynchronous operations and dynamic data.
+IP: Often more linear, with synchronous operations.
+Granularity
+
+RP: Often more high-level, abstracting over individual events.
+IP: Focuses at a lower level, managing individual events step by step.
+Data Management
+
+RP: Uses data-driven paradigms, where actions stem from data changes.
+IP: Often revolves around action-oriented triggers.
+Trade-Offs
+
+Code Readability
+
+RP: Offers compact, potentially complex chains, sometimes dubbed as “callback hell”.
+IP: Typically employs clear, linear sequences.
+Debugging
+
+RP: Might prove challenging to follow streams of asynchronous data.
+IP: Often easier to track sequential operations.
+Learning Curve
+
+RP: Can be steep due to new operators and composability concepts.
+IP: Familiar to most developers.
+Performance and Resource Management
+
+RP: Can lead to unnecessary operations in complex chains, affecting performance.
+IP: Developers have more direct control over resource allocation and deallocation.
+Business Impact
+
+RP: Highlights readiness for real-time, data-driven systems.
+IP: Proven in long-standing, more traditional setups.
+User Experience
+
+RP: Better suits responsive interfaces and real-time updates.
+IP: Well-established in stable, predictable environments.
+Development Flexibility
+
+RP: Offers more adaptability to handle asynchronous tasks.
+IP: Is the go-to for direct control over synchronous operations.
+
+Common Complexities
+Time-Dependent Transformations: Managing time shifts in data processing, especially in event-based systems, can be complex.
+Choice of Operators: With an array of operators available, choosing the right ones and understanding their behavior can be challenging.
+Back Pressure: Balancing data flow between fast and slow components, known as “back pressure,” can be hard to handle efficiently.
+Error Propagation and Handling: Dealing with errors in a cascading, reactive system requires careful consideration and can introduce complexities, especially when retry or fallback mechanisms are involved.
+Synchronization and Concurrency: Coordinating between multiple streams, especially when shared resources are involved, can lead to concurrency and synchronization issues.
+Performance Optimization: Ensuring the system is both responsive and resource-efficient can be intricate, often requiring a balance of trade-offs.
+
+====================================================================================================================================
+⚙️ Kafka (Streaming & Messaging)
+How would you ensure exactly-once processing in Kafka?
+
+1. Idempotent Producer
+Ensures no duplicate messages are written to Kafka in case of retries.
+Enabled by default from Kafka 3.0+.
+Prevents duplication at the write side.
+
+2. Transactions
+Kafka supports atomic writes across multiple partitions and topics.
+Use initTransactions(), beginTransaction(), commitTransaction() APIs.
+Makes produce + consume steps atomic (consume-transform-produce).
+
+3. Exactly-Once Semantics (EOS)
+Combines idempotent producers + transactions + consumer offset management.
+Available through Kafka's Streams API and Kafka Connect as well.
+
+====================================================================================================================================
+
+How do you handle schema evolution in a Kafka-based system?
+
+Apache Avro – Used to define data schemas in a compact, fast, binary format.
+Confluent Schema Registry – Central repository that stores and validates schemas against compatibility rules.
+Kafka – Only stores a schema ID along with the message payload (not the full schema).
+Schema Compatibility – Ensures consumers can read new/old versions of data safely.
+
+🔧 How Schema Evolution Works
+
+Step-by-Step Flow:
+Producer:
+Uses Avro to serialize data.
+Sends schema ID (retrieved from schema registry) + payload to Kafka topic.
+Schema Registry:
+Validates new schema against stored schemas for that topic.
+Enforces selected compatibility mode.
+Consumer:
+Gets schema ID from Kafka message.
+Fetches corresponding schema from Schema Registry.
+Deserializes message using correct schema version.
+
+| Mode         | Meaning                          |
+| ------------ | -------------------------------- |
+| **BACKWARD** | New schema can **read old data** |
+| **FORWARD**  | Old schema can **read new data** |
+| **FULL**     | Both FORWARD + BACKWARD          |
+| **NONE**     | No compatibility checks at all   |
+
+
+| Allowed Changes                          | Not Recommended / Disallowed                 |
+| ---------------------------------------- | -------------------------------------------- |
+| Add a new field with a **default value** | Remove a required field                      |
+| Remove a field with a **default**        | Change data type (e.g., int → string)        |
+| Reorder fields (in some cases)           | Rename fields (breaks deserialization logic) |
+| Change enum with **added values**        | Remove enum values or rename                 |
+
+====================================================================================================================================
+
+What is log compaction and when would you use it?
+
+| Feature    | Log Compaction                       |
+| ---------- | ------------------------------------ |
+| Based On   | Message key                          |
+| Purpose    | Keep latest message per key          |
+| Good For   | Caches, state snapshots, config data |
+| Avoid When | You need full event history          |
+| Triggered  | In background, not immediate         |
+
+====================================================================================================================================
+
+How would you design a Kafka-based architecture for real-time analytics?
+
+            ┌────────────┐
+            │  Producers │
+            └────┬───────┘
+                 │
+        ┌────────▼─────────┐
+        │     Kafka        │
+        │  (Topics + Part) │
+        └────┬─────┬───────┘
+             │     │
+ ┌──────────▼┐   ┌─▼───────────────┐
+ │ Kafka     │   │ Kafka Streams / │
+ │ Connect   │   │ Flink / Spark   │
+ │ (Sink)    │   │ Streaming        │
+ └────┬──────┘   └──┬──────────────┘
+      │            │
+┌─────▼───┐    ┌────▼─────┐
+│ Data    │    │ Aggregated│
+│ Lake /  │    │ Store     │
+│ OLAP DB │    │ (Redis,   │
+│ (e.g.   │    │ Cassandra)│
+│ S3,     │    └────┬──────┘
+│ Druid)  │         │
+└────┬────┘   ┌─────▼─────┐
+     │        │ BI Tools /│
+     │        │ Dashboards│
+     │        └───────────┘
+     │
+┌────▼────────┐
+│ Cold Storage│
+└─────────────┘
+
+🔁 Step-by-Step Data Flow
+
+1. Producers
+Web/mobile apps, IoT sensors, transactional DB logs, etc.
+Push events to Kafka topics via REST Proxy or Kafka Clients.
+2. Kafka Topics
+Partitioned topics for high throughput and ordering.
+Set retention appropriately (delete or compact policy).
+3. Stream Processing Layer
+Kafka Streams or Apache Flink/Spark Streaming does:
+Real-time aggregations (sum, count, avg)
+Windowed operations (1 min / 5 min time windows)
+Joins between streams
+Enrichment from static data sources
+4. Storage Options
+Hot Data: Redis, Cassandra, or InfluxDB for real-time lookup.
+Warm Data: Elasticsearch, Druid for fast querying.
+Cold Data: Amazon S3 / HDFS / Snowflake for long-term storage.
+5. Analytics Layer
+Use BI tools like Grafana, Superset, Power BI, or custom dashboards (React/Angular frontend calling APIs).
+
+====================================================================================================================================
+How do you handle ordering of messages across partitions?
+
+1. Design Around Partition-Level Ordering
+If strict ordering is required for related data (like customer transactions), ensure they all go to the same partition using a consistent message key (e.g., customer ID).
+Example:
+ProducerRecord<String, String> record = new ProducerRecord<>("transactions", customerId, transactionData);
+→ All events for a given customerId will go to the same partition and be ordered.
+2. Post-Processing for Cross-Partition Ordering
+If you must order messages from multiple partitions (rare case):
+
+Use a stream processing tool like Kafka Streams or Flink:
+They buffer events using event timestamps and windowing.
+Then reorder and process them deterministically.
+Add logical clocks or sequence numbers to events.
+Perform sorting or reordering after reading (at the consumer or aggregator level).
+3. Reduce Need for Global Ordering
+Ask: Do I need total order, or just per key/entity?
+If you can reduce the scope of ordering (e.g., per user, per session), you can stay within Kafka's partition model.
+
+====================================================================================================================================
+
+☁️ AWS (Cloud Architecture)
+How would you implement a fault-tolerant, highly available system on AWS?
+When would you use SQS vs SNS vs Kafka?
+How do you secure communication between microservices on AWS?
+What is your strategy for managing secrets and environment configs in AWS?
+How do you monitor and alert on services deployed in AWS?
+
+
+🌱 Spring Boot (Backend Architecture)
+How would you implement a reactive REST API with Spring WebFlux?
+How do you manage service-to-service communication in Spring Boot apps?
+What is your approach to exception handling in a RESTful API?
+
+====================================================================================================================================
+How do you handle database transactions in reactive code?
+if using blocking mode use
+Mono.fromCallable(() -> dbCall()).subscribeOn(Schedulers.boundedElastic())
+.retryWhen(Retry.backoff(3, Duration.ofSeconds(2)))
+.onErrorResume(ex -> {
+    // fallback or error handling
+    return Mono.empty();
+})
+non blocking use R2DBC ReactiveCrudRepository against a table
+
+====================================================================================================================================
+How do you build resilient microservices (e.g., using Circuit Breaker, Retry)?
+
+
+
+💼 Techno-Managerial Behavioral/Leadership Questions
+Tell me about a time you designed a system from scratch.
+How do you handle disagreements in technical discussions?
+How do you balance speed vs quality in delivery?
+Describe a time when you made a decision with incomplete requirements.
+How do you mentor or onboard junior team members?
+How do you ensure observability and debuggability in large distributed systems?
+
+Clickstream Analytics
+Analyze user behavior and navigation in real time.
+Fraud Detection
+Use ML models in stream processing to flag suspicious activity.
+IoT Monitoring
+Aggregate metrics from sensors and trigger alerts.
+Order Fulfillment Pipelines
+Track orders from placement to delivery in near real-time.
+
+====================================================================================================================================
+
+🔄 Cross-cutting System Design Questions
+Design an end-to-end order management system (frontend, backend, messaging, DB).
+How would you handle real-time notifications in a dashboard?
+How do you version APIs in a microservices-based architecture?
+How would you prevent race conditions in a distributed architecture?
+Explain how you would implement distributed tracing.
+
+Security in Angular
+
+XSS : Cross site scripting
+
+🔐 How to prevent XSS while using dynamic templates:
+Never use innerHTML or dynamic DOM manipulation unless necessary.
+If you do use DomSanitizer, never call bypassSecurityTrustHtml on untrusted input.
+Make sure all templates used via TemplateRef are declared in Angular and trusted.
+
+CORS:  Cross Origin Resource Sharing (Backend headers)
+
+| Header                             | Purpose                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `Access-Control-Allow-Origin`      | Specifies the origin(s) allowed to access the resource.                |
+| `Access-Control-Allow-Methods`     | Lists the HTTP methods (`GET`, `POST`, etc.) allowed.                  |
+| `Access-Control-Allow-Headers`     | Lists allowed request headers (`Content-Type`, `Authorization`, etc.). |
+| `Access-Control-Allow-Credentials` | Indicates whether credentials (cookies, auth headers) are allowed.     |
+| `Access-Control-Max-Age`           | Specifies how long the preflight response can be cached (in seconds).  |
+
+Angular internally uses DomSanitizer
+You can also use DomSanitizer.bypassSecurityTrustHtml for by passing security from known sources
+
+
+| Feature                      | **Tomcat**                               | **Jetty**                                        |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| **Project Maintainer**       | Apache Software Foundation               | Eclipse Foundation                               |
+| **Popularity**               | Very popular, widely used in enterprises | Popular in embedded systems and lightweight apps |
+| **Spring Boot Default**      | ✅ Yes                                    | ❌ No (needs explicit dependency)                 |
+| **Performance**              | Stable and robust                        | Lightweight and often faster for async loads     |
+| **Ease of Use**              | Easy, well-documented                    | Easy, slightly more dev-focused                  |
+| **Embedded Usage**           | Supported                                | ✅ Designed for embedded use                      |
+| **Async / Non-blocking I/O** | Basic support                            | More advanced and efficient async handling       |
+| **Footprint**                | Heavier                                  | Lightweight                                      |
+| **HTTP/2 Support**           | Available (from Tomcat 8.5+)             | Better and more flexible support                 |
+| **WebSocket Support**        | Good                                     | Good                                             |
+| **Customization**            | Moderate                                 | Highly flexible and embeddable                   |
+| **Use Case**                 | Traditional enterprise Java web apps     | Microservices, embedded systems, reactive apps   |
+

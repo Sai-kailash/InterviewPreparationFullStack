@@ -1,0 +1,45 @@
+🔑 Core Features of DynamoDB
+1. Fully Managed and Serverless
+
+No server provisioning or management needed.
+Auto-scales for throughput and storage.
+Built-in fault tolerance and high availability.
+2. Key-Value and Document Data Models
+
+Supports flexible schema-less design.
+Stores data as key-value pairs or JSON-like documents.
+3. High Performance at Scale
+
+Single-digit millisecond latency at any scale.
+Suitable for applications needing real-time access.
+4. Automatic Scaling
+
+DynamoDB Auto Scaling adjusts read/write throughput capacity based on traffic.
+Optionally supports provisioned throughput with limits.
+5. Global Tables
+
+Multi-region, active-active replication.
+Enables globally distributed applications with low latency.
+6. Streams (Change Data Capture)
+
+DynamoDB Streams capture changes (insert, update, delete) to items.
+Integrates with AWS Lambda to trigger functions on data change.
+7. Integrated with AWS Lambda and Event-Driven Architectures
+
+Native event source mapping for serverless event processing.
+8. Fine-Grained Access Control
+
+Uses IAM policies for table- and item-level access.
+Supports encryption at rest and in transit.
+9. On-Demand Backup and Restore
+
+Create backups without affecting performance or availability.
+Point-in-time recovery (PITR) allows restoring to any second within the last 35 days.
+10. DAX (DynamoDB Accelerator)
+
+In-memory caching layer.
+Boosts read performance by 10x (microsecond latency).
+11. Secondary Indexes
+
+Global Secondary Index (GSI): Query on non-key attributes.
+Local Secondary Index (LSI): Sort key variations on the same partition key.

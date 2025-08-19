@@ -1,0 +1,10 @@
+| Feature                         | Description                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| 🔗 **Block Storage**            | Data is stored in blocks (like physical hard disks), not as files or objects |
+| 💾 **Attachable to EC2**        | Acts like an external disk that you mount to an EC2 instance                 |
+| ♻️ **Persistent**               | Data is preserved even if the EC2 instance stops or restarts                 |
+| 📏 **Scalable Sizes**           | Ranges from GBs to multi-TB volumes                                          |
+| 💨 **High Performance Options** | General Purpose SSD (gp3), Provisioned IOPS (io2), HDDs, etc.                |
+| 🔁 **Snapshots**                | You can create backups of volumes using EBS Snapshots (stored in S3)         |
+| 🔒 **Encrypted**                | Supports encryption at rest and in transit                                   |
+| 🛑 **Region-Specific**          | EBS volumes are tied to a specific Availability Zone                         |

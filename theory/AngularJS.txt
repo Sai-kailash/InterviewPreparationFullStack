@@ -1,0 +1,75 @@
+| **Concept**                 | **AngularJS (1.x)**                                        | **Angular (2+)**                                                            |
+| --------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Language**                | JavaScript                                                 | TypeScript                                                                  |
+| **Architecture Pattern**    | MVC (Model-View-Controller)                                | Component-based architecture                                                |
+| **Modules**                 | No native module system, used `ng-app`, `ng-controller`    | Uses `@NgModule` for defining modules                                       |
+| **Dependency Injection**    | Custom DI system                                           | Hierarchical DI system built-in via TypeScript decorators                   |
+| **Data Binding**            | Two-way by default (`ng-model`)                            | One-way and two-way binding with `[(ngModel)]`                              |
+| **Templates**               | Uses HTML with Angular-specific syntax (`ng-*` directives) | Uses HTML with `[property]`, `(event)`, `*ngFor`, `*ngIf`, etc.             |
+| **Directives**              | Predefined like `ng-model`, `ng-repeat`                    | Structural (`*ngIf`, `*ngFor`) and Attribute directives (customizable)      |
+| **Scope**                   | `$scope` object used for data binding                      | No `$scope`; uses component class properties                                |
+| **Controller**              | Uses `controller` for logic                                | No controller; logic is inside `@Component` class                           |
+| **Watchers / Digest Cycle** | Dirty checking via `$digest()` and `$apply()`              | Uses zone.js and change detection strategy (Default or `OnPush`)            |
+| **Routing**                 | `$routeProvider` via `ngRoute` module                      | `@angular/router` with route guards, lazy loading, resolvers                |
+| **Forms**                   | Template-driven only                                       | Template-driven and Reactive Forms                                          |
+| **Testing**                 | Jasmine + Karma setup, difficult for complex scenarios     | Easy unit and integration testing using TestBed and Jasmine/Karma           |
+| **Performance**             | Slower due to watchers and digest cycle                    | Better due to Ahead-of-Time (AOT) compilation, Ivy, ChangeDetectionStrategy |
+| **Mobile Support**          | Not built with mobile in mind                              | Mobile-first and progressive web app (PWA) support                          |
+| **Tooling (CLI)**           | No official CLI                                            | Angular CLI for scaffolding, building, testing, deployment                  |
+| **Build & Optimization**    | Manual, uses Grunt/Gulp/Webpack                            | Integrated build optimizer, tree shaking, and bundling                      |
+| **Component Communication** | Uses `$scope`, `$emit`, `$broadcast`                       | Uses `@Input()`, `@Output()`, services, RxJS                                |
+| **Animations**              | `ngAnimate` module                                         | `@angular/animations` module with trigger and state transitions             |
+| **HTTP Communication**      | `$http`, `$resource`                                       | `HttpClient` from `@angular/common/http`                                    |
+| **State Management**        | No official solution                                       | Can use RxJS, NgRx, Akita, or services                                      |
+| **Lifecycle Hooks**         | Few (e.g., `$onInit`)                                      | Rich hooks like `ngOnInit`, `ngOnDestroy`, `ngAfterViewInit`, etc.          |
+| **Release Support**         | Deprecated (EOL in 2022)                                   | Actively maintained and updated regularly (LTS versions available)          |
+
+
+| **Feature**                 | **AngularJS (1.x)**                         | **ReactJS**                                             |
+| --------------------------- | ------------------------------------------- | ------------------------------------------------------- |
+| **Type**                    | Full-fledged MVC framework                  | Library focused on UI rendering                         |
+| **Language**                | JavaScript (with support for ES5/ES6)       | JavaScript + JSX                                        |
+| **Architecture**            | MVC/MVVM (Model-View-Controller)            | Component-based (View only)                             |
+| **Data Binding**            | Two-way data binding (`ng-model`)           | One-way data binding                                    |
+| **DOM Manipulation**        | Real DOM                                    | Virtual DOM                                             |
+| **Performance**             | Slower (due to real DOM and dirty checking) | Faster (due to Virtual DOM diffing and reconciliation)  |
+| **Learning Curve**          | Steeper (due to many built-in concepts)     | Moderate (simpler core concepts, but complex ecosystem) |
+| **Templating**              | HTML with AngularJS directives (`ng-*`)     | JSX (JavaScript + HTML syntax)                          |
+| **Dependency Injection**    | Built-in Dependency Injection               | Not built-in (can use Context API or third-party libs)  |
+| **Routing**                 | `ngRoute`, later `ui-router`                | React Router (external library)                         |
+| **Form Handling**           | Template-driven using `ng-model`            | Controlled and uncontrolled components                  |
+| **State Management**        | \$scope, \$rootScope                        | Local state, Context API, Redux, Recoil, Zustand, etc.  |
+| **Mobile Development**      | Ionic (AngularJS-based mobile SDK)          | React Native                                            |
+| **Tooling**                 | No official CLI (Grunt/Gulp/Webpack used)   | React Developer Tools, Create React App CLI             |
+| **Community Support**       | Declining (EOL declared in 2022)            | Very strong and growing                                 |
+| **Backward Compatibility**  | Angular 2+ is a full rewrite                | React maintains strong backward compatibility           |
+| **Component Communication** | `$emit`, `$broadcast`, services             | Props, callbacks, Context API                           |
+| **Use in Production**       | Rare (mostly legacy apps)                   | Very common, especially in new web apps                 |
+| **Testing Support**         | Jasmine + Karma (manual setup)              | Jest + React Testing Library (rich ecosystem)           |
+| **Maintenance**             | Deprecated since Jan 2022                   | Actively maintained by Facebook (Meta)                  |
+
+
+| **Aspect**                | **Angular (2+)**                                             | **ReactJS**                                             |
+| ------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
+| **Type**                  | Full-fledged **framework**                                   | **UI library**                                          |
+| **Maintained By**         | Google                                                       | Meta (Facebook)                                         |
+| **Language**              | TypeScript (superset of JavaScript)                          | JavaScript (with JSX)                                   |
+| **Architecture**          | Component-based, with full MVC-ish structure                 | Component-based (only V in MVC)                         |
+| **Data Binding**          | Two-way data binding (via `[(ngModel)]`)                     | One-way data flow (via `props`)                         |
+| **DOM**                   | Real DOM with change detection and zone.js                   | Virtual DOM for efficient diffing and rendering         |
+| **Rendering**             | Imperative + Declarative (templating with directives)        | Fully Declarative (JSX)                                 |
+| **Templating**            | HTML templates with Angular syntax (`*ngIf`, `*ngFor`, etc.) | JSX (JavaScript + XML)                                  |
+| **State Management**      | Services, RxJS, NgRx (Redux-like)                            | useState, Context API, Redux, Recoil, Zustand           |
+| **Routing**               | Built-in (`@angular/router`)                                 | External (`react-router`)                               |
+| **Forms**                 | Template-driven and Reactive forms                           | Controlled and uncontrolled components                  |
+| **Dependency Injection**  | Built-in Dependency Injection (DI) framework                 | No built-in DI (Context API is an alternative)          |
+| **Mobile Development**    | Angular + Ionic                                              | React Native                                            |
+| **Tooling**               | Angular CLI (powerful code generation and scaffolding)       | Create React App, Vite, Webpack                         |
+| **Testing**               | Jasmine, Karma, TestBed                                      | Jest, React Testing Library                             |
+| **Performance**           | High, but heavier due to zone.js and full framework overhead | Very high, lightweight rendering engine                 |
+| **Learning Curve**        | Steep (due to complex concepts like DI, modules, RxJS)       | Moderate (core API is smaller, JSX takes time to learn) |
+| **Community & Ecosystem** | Strong (backed by Google, large enterprise use)              | Very strong (huge community and ecosystem)              |
+| **Bundle Size**           | Larger due to complete framework                             | Smaller initially, grows with added packages            |
+| **Modularity**            | High (NgModules, feature modules, lazy loading)              | High (via dynamic imports, code splitting, etc.)        |
+| **Use in Enterprises**    | Popular in large, structured apps                            | Popular in startups and large apps alike                |
+| **Release Cycle**         | Predictable and managed by Google                            | Frequent updates from community/Meta                    |

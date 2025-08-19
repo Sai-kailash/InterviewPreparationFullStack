@@ -1,0 +1,648 @@
+
+📦 Application Startup Flow:
+main.ts calls platformBrowserDynamic().bootstrapModule(AppModule)
+This loads AppModule
+AppModule bootstraps AppComponent
+AppComponent is rendered in
+
+index.html using the selector:
+<app-root></app-root>
+
+main.ts contains
+platformBrowserDynamic().bootstrapModule(AppModule); ---> Loads AppModule
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .catch(err => console.error(err));
+
+AppModule contains
+
+@NgModule({
+  declarations: [AppComponent, ...],   // All components, directives, pipes used here
+  imports: [BrowserModule, ...],        // Other Angular or custom modules
+  exports: [...],                       // (Optional) Items this module makes available
+  providers: [...],                     // Services available app-wide
+  bootstrap: [AppComponent]             // 👈 First component to load
+})
+export class AppModule {}
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**********************************************************************************Service****************************************************************************
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { User } from '../models/user.model';
+
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  constructor(private http: HttpClient) {}
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>('https://api.example.com/users');
+  }
+}
+
+In the component where service is used you can do this
+this.userService.getUsers().subscribe(data => {
+  this.users = data;
+});
+
+
+Use of Observable
+Feature	Reason
+✅ Non-blocking	Keeps UI responsive while waiting for response
+✅ Flexible	Supports retry, delay, timeout, debounce, etc.
+✅ Composable	You can chain operators like map, filter, catchError
+✅ Cancelable	You can unsubscribe to prevent memory leaks
+✅ Built-in support	Angular’s HttpClient returns Observables by default
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+**********************************************************************************Component****************************************************************************
+
+A component is a UI piece + logic combo. It includes:
+
+A TypeScript class (component logic)
+An HTML template (view)
+CSS styles (appearance)
+Optional test file (.spec.ts)
+
+📦 Where Do Components Live?
+They are declared inside Angular modules using the declarations array.
+
+
+// user-list.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-user-list',          // Used as <app-user-list></app-user-list>
+  templateUrl: './user-list.component.html',  // HTML view
+  styleUrls: ['./user-list.component.css']   // CSS styles
+})
+export class UserListComponent {
+  users = ['Alice', 'Bob', 'Charlie'];
+
+  selectUser(user: string) {
+    console.log('Selected:', user);
+  }
+}
+
+🧠 How Components Work Inside a Module
+
+Concept	Explanation
+Declared in module	So Angular knows it belongs to this module
+Not usable outside	Unless exported via exports or declared in a shared module
+Can be nested	One component can use another as child via selector
+🔗 Communication Between Components
+
+Direction	How
+Parent ➡️ Child	@Input()
+Child ➡️ Parent	@Output() + EventEmitter
+Sibling ↔️ Sibling	Via a shared service
+
+ 2. What Are Standalone Components?
+
+New in Angular 14+, these are components that do not need to be declared in any NgModule.
+
+@Component({
+  standalone: true, // makes it stand alone
+  selector: 'app-hero',
+  templateUrl: './hero.component.html',
+  imports: [CommonModule]  // 👈 You import dependencies directly
+})
+export class HeroComponent {}
+
+==============================================================================================================≠≠≠=======
+EventEmitter<T> is a class provided by Angular (from @angular/core) used to emit custom events from the child component.
+
+The parent listens for this event like an HTML event (e.g., (click), (change)).
+You can think of it like EventEmitter in Node.js or custom Event objects in DOM
+
+import { Component, Output, EventEmitter } from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  template: `<button (click)="notifyParent()">Notify</button>`
+})
+export class ChildComponent {
+  @Output() notify = new EventEmitter<string>();
+
+  notifyParent() {
+    this.notify.emit('Hello from child!');
+  }
+}
+
+<!-- parent.component.html -->
+<app-child (notify)="handleNotification($event)"></app-child>
+
+handleNotification(message: string) {
+  console.log('Received from child:', message);
+}
+====================================================================================================================================================================
+
+
+**********************************************************************************Module****************************************************************************
+
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { SomeComponent } from './some.component';
+
+@NgModule({
+  declarations: [SomeComponent],       // Components, directives, pipes belonging to this module
+  imports: [CommonModule],             // Other modules this module depends on
+  exports: [SomeComponent],            // What this module makes available to other modules
+  providers: [],                       // Services specific to this module
+})
+export class SomeModule { }
+
+⚡️ 1. What Are Lazy Modules?
+
+🧠 Definition:
+Lazy loading means:
+
+“Load a module (and its components) only when it's needed, not when the app starts.”
+🔥 Why Use Lazy Loading?
+Faster initial load time ⏩
+Better performance for large apps
+Organizes features by route
+
+Lazy loading is defined in the routes
+In the route if the app is directed to user, loadChildren make sures it loads UserModule
+
+const routes: Routes = [
+  {
+    path: 'user',
+    loadChildren: () =>
+      import('./user/user.module').then(m => m.UserModule)
+  }
+];
+========================================================================================================================
+Important to learn
+
+1. Change Detection
+
+How Angular knows when and what to update in the DOM
+Zone.js and NgZone
+ChangeDetectorRef, OnPush strategy, etc.
+
+Zone.js is a monkey-patching library that intercepts async tasks like:
+
+setTimeout, Promise, fetch, XHR
+DOM events (like click)
+📌 This allows Angular to automatically know when to trigger change detection after async operations.
+So, even if you just use setTimeout, Angular will detect that an async task ran and will re-check the component tree.
+
+📬 How Zone.js Triggers Change Detection
+
+Zone.js maintains a queue of macrotasks and microtasks.
+
+🔁 The flow is:
+You trigger an async task (e.g. click, HTTP call)
+Zone.js intercepts and tracks it
+When the task completes and the microtask queue is empty,
+Angular calls the ApplicationRef.tick() method
+This starts change detection by walking the component tree and calling detectChanges() on each component
+✅ Angular runs change detection only after async tasks finish and microtask queue is clear.
+
+🔍 What counts as microtasks?
+Category	Task Type
+Promise.then()	Microtask
+queueMicrotask()	Microtask
+setTimeout()	Macrotask
+Observable.subscribe()	Usually microtask (but scheduler can affect this)
+HTTP calls	Microtask on response
+
+@Component({
+  selector: 'my-comp',
+  templateUrl: './my.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush  //Used for performance sensitive  when change detection needs to be controlled. For all components it will be ChangeDetectionStrategy.DEFAULT
+})
+
+OnPush Strategy (changeDetection: OnPush)
+Runs change detection only if:
+1. An @Input() reference changes
+2. An event is triggered inside the component
+3. You manually call detection using ChangeDetectorRef
+
+
+ChangeDetectorRef
+A powerful tool to manually control change detection.
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class FooComponent {
+  data: any;
+
+  constructor(private cd: ChangeDetectorRef) {}
+
+  ngOnInit() {
+    fetchData().then(res => {
+      this.data = res;
+      this.cd.markForCheck(); // because async data won't trigger CD automatically with OnPush
+    });
+  }
+}
+
+
+detectChanges() → manually trigger change detection for that component and children.
+markForCheck() → in OnPush strategy, marks component for next detection cycle.
+detach() → completely stops CD for that component.
+reattach() → re-enables it.
+
+-------------------------------------------------------------------------------------------------------------------------
+2. Dependency Injection (DI) System
+
+How services/components are instantiated and injected
+Injector hierarchy (root/module/component-level)
+
+When you decorate a class with @Injectable(), Angular can inject it into components, other services, pipes, etc.
+
+Example:
+@Injectable({
+  providedIn: 'root'  // or a specific module/component
+})
+export class UserService {
+  constructor() {}
+}
+What happens:
+Angular looks for UserService in the injector hierarchy
+If not found, it creates and caches an instance
+That instance is reused wherever needed
+
+this.userService.getUsers().pipe(
+  filter(users => users.length > 0),
+  map(users => users.map(user => user.name))
+).subscribe(userNames => {
+  console.log(userNames);
+});
+
+pipe() contains transformation logic like map and filter to be used and then subscribe to the observable
+
+-------------------------------------------------------------------------------------------------------------------------
+3. Component Lifecycle
+
+Internals of ngOnInit(), ngAfterViewInit(), etc.
+How Angular manages component creation, rendering, and destruction
+
+✅ When are Components Destroyed?
+Navigating to a different route (URL change):
+The routed component is destroyed as Angular loads the new route's component.
+Using structural directives like *ngIf:
+When the condition becomes false, Angular removes the component from the DOM.
+Switching tabs (if tab hides/removes a component):
+If the DOM element containing the component is removed, the component is destroyed.
+Manually removing a component created via ViewContainerRef.createComponent()
+
+------------------------------------------------------------------------------------------------------------------------
+4. Template Compilation
+
+How Angular compiles your HTML templates and TypeScript into efficient JS
+Ahead-of-Time (AOT) and Just-in-Time (JIT) compilation
+
+Feature	JIT (Just-in-Time)	AOT (Ahead-of-Time)
+📍 When it happens	In the browser at runtime	During build time (before browser loads)
+🧱 Build Size	Larger	Smaller (removes unused code, no compiler)
+⚡ Load Time	Slower (compiles in browser)	Faster (precompiled templates)
+🧪 Debugging	Easier (source maps, less optimized)	Harder (more optimized, but tooling helps)
+🛡️ Security	Less secure (HTML parsing at runtime)	More secure (HTML is pre-parsed)
+🏗️ CLI Mode	ng serve by default (JIT in dev)	ng build --prod (AOT by default in prod)
+
+📌 How Ivy Renders Components
+Template Compilation:
+Angular compiles component templates (HTML + Angular syntax) into low-level instructions.
+These instructions describe how to create and update DOM elements efficiently.
+Change Detection:
+Ivy uses a more granular and faster change detection mechanism than the older View Engine.
+It only updates what has changed, not the entire component.
+Rendering:
+The compiled instructions are used to create DOM nodes and inject data-bound values into the component view.
+
+------------------------------------------------------------------------------------------------------------------------
+5. View and Content Projection
+
+ViewContainerRef, TemplateRef, ng-content
+Angular’s rendering engine (Ivy or ViewEngine)
+
+The View is what a component defines in its own template (templateUrl or inline).
+whatever present in the template is part of the view
+
+Content Projection lets you pass custom HTML into a component — the content is defined by the parent and inserted into the child component.
+ng-content is like a placeholder where external HTML will be inserted into the component.
+
+TemplateRef
+A reference to a block of HTML template that hasn’t been rendered yet. To render it you should use ViewContainerRef
+
+<ng-template #tpl>
+  <p>This is a delayed or conditional template</p>
+</ng-template>
+
+@ViewChild('tpl') tpl: TemplateRef<any>;
+
+ViewContainerRef
+A reference to a container that can hold one or more views (like inserting DOM manually). You can inject it and add views.
+
+constructor(private vcr: ViewContainerRef) {}
+
+ngOnInit() {
+  this.vcr.createEmbeddedView(this.tpl);
+}
+
+------------------------------------------------------------------------------------------------------------------------
+6. Change Detection Tree
+Tree-based structure of components and how Angular traverses it to apply updates
+
+Angular uses Zone.js to know when async tasks (like HTTP calls, clicks, timers) finish.
+When it detects that the JavaScript call stack is empty, Angular runs change detection starting from the root component.
+
+It does the following:
+
+Checks AppComponent for changes
+If changes are detected, it checks its children
+It walks the entire tree down unless:
+    A component uses ChangeDetectionStrategy.OnPush
+    A component is marked as detached from the tree
+
+🧰 ChangeDetectionStrategy Options
+
+✅ Default (Check Always)
+Angular checks this component and all its children on every detection cycle
+Even if inputs haven't changed
+✅ OnPush (Check on Input change or events)
+Angular checks component only if
+An @Input reference changes
+You explicitly trigger detection (markForCheck)
+There’s a DOM event inside it
+Improves performance by skipping deep checks
+
+------------------------------------------------------------------------------------------------------------------------
+7. Zone.js Integration
+
+How Angular hooks into browser events (clicks, timeouts, HTTP) using Zone.js to trigger change detection
+
+Feature	Zone.js Role	Angular Reaction
+setTimeout / setInterval	Patched by Zone.js	Triggers CD after execution
+DOM Events (click, input)	Patched event listeners	CD is triggered
+Promise, fetch, XHR	Wrapped by Zone.js	CD runs after response/callback
+NgZone.run()	Marks a block to trigger CD	Ensures CD runs
+NgZone.runOutsideAngular()	Opt out of CD for performance	Skips CD
+
+Step-by-step:
+Zone.js patches async APIs
+When you call setTimeout, it’s not the native one, but Zone's wrapped version.
+Your event or HTTP callback executes inside a Zone
+The Zone knows what started it, when it finishes, and what code ran inside.
+After the task is done, Zone.js triggers Angular's NgZone to:
+Call ApplicationRef.tick() → which runs change detection
+
+
+------------------------------------------------------------------------------------------------------------------------
+8. Routing Internals
+
+How the Router parses URL, activates components, and manages guards/resolvers
+
+A resolver in Angular is a class that implements the Resolve<T> interface.
+It is used to fetch data before a route is activated, so the component gets the data immediately on init, rather than fetching it later via an HTTP call.
+
+URL -> Router parses URL -> match route -> run guards -> resolve data -> Activate component -> render view
+
+const routes: Routes = [
+  {
+    path: 'user/:id',
+    component: UserComponent,
+    canActivate: [AuthGuard],
+    resolve: { user: UserResolver }
+  }
+];
+
+On navigating to /user/123:
+
+Parse URL → { path: 'user/:id', id: 123 }
+Run AuthGuard.canActivate()
+Call UserResolver.resolve(123)
+Instantiate UserComponent
+Inject ActivatedRoute with params and resolved data
+Render the view
+
+. Run Guards (CanActivate, CanDeactivate, etc.)
+🔒 Guards protect navigation.
+
+CanActivate → should we allow navigation to the route?
+CanActivateChild → should we allow to child routes?
+CanDeactivate → can we leave this component?
+CanLoad → lazy-loaded module loading control
+
+
+------------------------------------------------------------------------------------------------------------------------
+9. RxJS Integration
+
+How Angular leverages RxJS in HttpClient, Forms, EventEmitters, etc.
+
+this.http.get<User[]>('/api/users')
+  .pipe(
+    map(users => users.filter(u => u.active)),
+    catchError(err => of([])) // fallback in case of error
+  )
+  .subscribe(data => this.users = data);
+
+
+this.form.get('email')?.valueChanges
+  .pipe(debounceTime(300))
+  .subscribe(value => {
+    console.log('Email input changed to:', value);
+  });
+
+
+🔹 3. EventEmitter — Component Communication
+
+✅ How:
+@Output() event = new EventEmitter<T>() emits an Observable-like stream.
+Parent components subscribe to child's EventEmitter.
+📌 Example:
+@Output() onSubmit = new EventEmitter<string>();
+
+submitForm() {
+  this.onSubmit.emit(this.form.value);
+}
+In the parent:
+
+<app-child (onSubmit)="handleSubmit($event)"></app-child>
+
+------------------------------------------------------------------------------------------------------------------------
+10. Forms Engine (Reactive + Template-Driven)
+
+How FormGroup, FormControl, validation logic is internally wired
+
+const profileForm = new FormGroup({
+  name: new FormControl(''),
+  email: new FormControl('')
+});
+
+When you assign validators to FormControl or FormGroup, Angular wires up validation this way:
+
+🔄 Validation Process
+Control value changes (user typing or programmatically).
+Triggers the _runValidator() internal method.
+Executes synchronous validators (like Validators.required, minLength, etc.).
+If present, runs asynchronous validators (like server checks).
+Sets .status as VALID, INVALID, PENDING, or DISABLED.
+Emits valueChanges and statusChanges Observables.
+
+📬 3. Reactive Event System
+
+Each FormControl, FormGroup, and FormArray internally uses RxJS Subjects:
+
+valueChanges: emits every time the control value changes.
+statusChanges: emits every time the validation status changes.
+
+
+🛠️ 4. How the Template is Wired
+
+<form [formGroup]="profileForm">
+  <input formControlName="name">
+</form>
+When Angular sees [formGroup], it uses the ControlContainer and FormGroupDirective internally to:
+
+Link the template input to the corresponding FormControl in the group.
+Attach change detection to rerender error states and value changes.
+Apply ng-valid, ng-invalid, ng-touched etc. classes automatically.
+
+
+========================================================================================================================
+Angular Internals
+
+Your Code
+ └── Components / Templates
+     └── Angular Compiler (AOT/JIT)
+         └── Angular Framework Core
+             └── Change Detection
+                 └── Rendering Engine (Ivy)
+                     └── Zone.js & RxJS
+                         └── Browser APIs
+
+constructor()	Component is created, but not yet rendered
+🛠 Ivy renders template	DOM elements are created using Ivy
+@Input() bindings	Are set before ngOnInit()
+ngOnInit()	Lifecycle method to run initialization logic
+🌀 Change Detection	Ensures view stays in sync with data
+
+The component lifecycle starts with the constructor and proceeds to ngOnInit().
+However, the DOM rendering by the Ivy engine begins before ngOnInit(), right after the component instance is created and inputs are resolved.
+
+Component is instantiated (constructor)
+        ⬇️
+@Input() properties are set from parent
+        ⬇️
+Template is compiled and rendered to DOM (by Ivy)
+        ⬇️
+ngOnInit() is called
+        ⬇️
+Change Detection ensures DOM stays in sync with data
+
+========================================================================================================================
+🔄 Angular Lifecycle Hooks — Quick Recap
+
+Hook	When It Runs
+ngOnChanges()	Whenever an @Input() value changes (even before ngOnInit)
+ngOnInit()	Once, after @Input() is set
+ngAfterViewInit()	Once, after the component’s view and child views are fully initialized
+ngOnDestroy()	Just before the component is destroyed/removed from DOM
+========================================================================================================================
+
+@ViewChild is a decorator that allows a component to get a reference to a DOM element or a child component from its template.
+
+You use it when you want to access a template element or directive after the component has rendered.
+
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+
+@Component({
+  selector: 'app-auto-focus',
+  template: `<input #myInput type="text" placeholder="Type something..." />`
+})
+export class AutoFocusComponent implements AfterViewInit {
+
+  // Step 1: Use @ViewChild to get a reference to the input element
+  @ViewChild('myInput') inputElementRef: ElementRef;
+
+  // Step 2: Runs after the component's view (DOM) is fully initialized
+  ngAfterViewInit(): void {
+    // Step 3: Access the native input element and focus it
+    this.inputElementRef.nativeElement.focus();
+    console.log('Input was focused!');
+  }
+}
+
+The async pipe allows you to subscribe to an Observable (or Promise) directly in your HTML template, and Angular will:
+
+Automatically subscribe to it
+Automatically render the emitted value
+Automatically unsubscribe when the component is destroyed (prevents memory leaks)
+
+✅ Key Differences Between Observable and Promise
+Feature	Promise	Observable
+Async or Sync?	Asynchronous        Asynchronous
+Eager vs Lazy	Eager (runs immediately)	Lazy (runs only when subscribed)
+Single vs Multiple	Resolves once (single value)	Can emit multiple values
+Cancellable?	❌ No	✅ Yes (unsubscribe)
+Operators	❌ Limited (then, catch, finally)	✅ Many (map, filter, debounce, etc.)
+Used in Angular	Rarely	✅ Preferred (RxJS based)
+
+🔁 Digest Cycle Flow:
+Event or function triggers change (like a user input or $http response).
+Angular calls $digest(), which:
+Iterates over all $scope watchers.
+Compares the new and old values.
+Calls the watcher’s callback if values have changed.
+If changes are detected during a watcher call, the digest cycle runs again.
+Continues until no more changes or 10 iterations reached.
+
+### ✅ Advantages of Injected Services in Angular
+
+1. **Reusability**: Services can be shared across multiple components.
+2. **Separation of Concerns**: Keeps business logic out of components.
+3. **Testability**: Easy to mock services for unit testing.
+4. **Singleton by Default**: Efficient memory usage (provided in root).
+5. **Dependency Management**: Angular’s DI system handles creation/lifecycle.
+
+---
+
+### ❌ Disadvantages
+
+1. **Tight Coupling**: Components may become dependent on specific service implementations.
+2. **Global State Risk**: Singleton services can accidentally share mutable state.
+3. **Lazy Load Complexity**: Improper scoping can lead to multiple service instances.
+4. **Hidden Dependencies**: DI makes tracking dependencies less explicit in some cases.
+
+Let me know if you want use-case-specific pros/cons.
+
+localStorage
+getConfig(): Observable<Config> {
+  const cached = localStorage.getItem('appConfig');
+  if (cached) {
+    return of(JSON.parse(cached));
+  }
+
+  return this.http.get<Config>('/api/config').pipe(
+    tap(data => localStorage.setItem('appConfig', JSON.stringify(data)))
+  );
+}
+
+Tree shaking is the process of removing unused code during the build process.
+
+✅ Purpose:
+To reduce the final bundle size by eliminating dead code (code that is imported but never used).
+
+🔍 How it works:
+During build time (ng build --prod), Angular’s compiler analyzes your code.
+It “shakes” out unused functions, classes, and modules — like shaking dead leaves from a tree 🌳.
+
+🪞 What is Minification?
+
+Minification is the process of compressing the code by:
+
+Removing whitespace, line breaks
+Shortening variable names
+Removing comments

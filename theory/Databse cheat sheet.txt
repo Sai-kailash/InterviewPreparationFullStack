@@ -1,0 +1,309 @@
+-- Create tables
+CREATE TABLE Department (
+    DeptID INT PRIMARY KEY AUTO_INCREMENT, // primary key
+    DeptName VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Employee (
+    EmpID INT PRIMARY KEY AUTO_INCREMENT, //primary key
+    EmpName VARCHAR(100) NOT NULL,
+    EmpDeptID INT,
+    FOREIGN KEY (EmpDeptID) REFERENCES Department(DeptID)
+);
+
+-- Insert data
+INSERT INTO Department (DeptName) VALUES ('Engineering');
+========================================================================================================================
+Indexes are essential in SQL to accelerate queries by providing quick data lookups.
+
+How Do Indexes Improve Performance?
+
+Faster Data Retrieval: Think of an index like a book’s table of contents, which leads you right to the desired section.
+Sorted Data Access: With data logically ordered, lookups are more efficient.
+Reduces Disk I/O: Queries may read fewer data pages when using an index.
+Enhances Joins: Indexes help optimize join conditions, particularly in larger tables.
+Aggregates and Uniques: They can swiftly resolve aggregate functions and enforce data uniqueness.
+
+========================================================================================================================
+
+Stored Procedures
+
+Description: Allows the database to pre-compile and store your SQL code, providing a layer of abstraction between user input and database operations.
+
+Code Example:
+
+With MySQL:
+Procedure definition:
+CREATE PROCEDURE login(IN p_username VARCHAR(50), IN p_password VARCHAR(50))
+BEGIN
+  SELECT * FROM users WHERE username = p_username AND password = p_password;
+END
+
+cursor.callproc('login', (username, password))
+========================================================================================================================
+
+Index Types
+
+B-Tree: Standard for most databases, arranges data in a balanced tree structure.
+Hash: Direct lookup based on a hash of the indexed column.
+Bitmap: Best used for columns with a low cardinality.
+R-Tree: Optimized for spatial data, such as maps.
+Different databases may offer additional specialized index types.
+
+CREATE INDEX idx_username ON users(username);
+
+Partition Key or hash or Key or Dist Key	Determines item placement and partitioning
+Sort Key	Range Key	Sorts and uniquely identifies items in partition
+
+Primary Index	Automatically created with the table; based on the primary key
+Global Secondary Index (GSI)	Manually defined; can use different partition/sort keys
+Local Secondary Index (LSI)	Same partition key as base table but a different sort key
+
+========================================================================================================================
+The GROUP BY clause in SQL serves to consolidate data and perform operations across groups of records.
+
+Key Functions
+
+Data Aggregation: Collapses rows into summary data.
+Filtering: Provides filtering criteria for groups.
+Calculated Fields: Allows computation on group-level data.
+
+For data aggregation, we use aggregate functions such as SUM, AVG, COUNT, MIN, or MAX.
+
+GROUP BY and HAVING
+
+GROUP BY: Used to group rows based on specified columns. This groups the result set rather than applying the aggregate function to the entire column of the table.
+HAVING: Similar to WHERE but used with GROUP BY for filtering groups based on conditions.
+========================================================================================================================
+
+In MySQL, you can reorder the results in a random sequence. This can be useful, for instance, in a quiz app to randomize the order of questions. The ORDER BY clause with the RAND() function looks like this:
+
+SELECT product_name
+FROM products
+ORDER BY RAND()
+LIMIT 1;
+
+========================================================================================================================
+
+Wildcard characters, often used with LIKE in SQL, serve to match one or more unspecified characters in textual data.
+
+Common Wildcard Characters
+
+%: Matches any sequence of characters (including none).
+_: Matches any single character.
+
+========================================================================================================================
+
+Handling NULLs with Functions
+
+COALESCE(): Returns the first non-NULL value from a list of values.
+Here’s how COALESCE works:
+
+SELECT name, COALESCE(email, phone, 'N/A') AS contact_info
+FROM presenter;
+
+If both email and phone are non-NULL, the query returns the email.
+If email is NULL but phone is non-NULL, the phone number is returned.
+If both email and phone are NULL, ‘N/A’ is returned as the contact information.
+
+Example:
+SELECT COALESCE(preference, 'No Preference Provided') FROM clients;
+ISNULL(): Returns the second value if the first is NULL.
+
+Example:
+SELECT ISNULL(payment, 0) FROM orders;
+IFNULL(): MySQL equivalent of ISNULL(). Best used across databases for portability.
+
+========================================================================================================================
+
+The main distinction between UNION and UNION ALL lies in their treatment of duplicate records.
+
+UNION removes duplicates, while
+UNION ALL retains all records, including duplicates.
+
+========================================================================================================================
+
+🆚 Summary Table
+
+Feature	                 Star Schema	Snowflake Schema	   Galaxy Schema
+Dimension Structure	     Denormalized	Normalized	            Mixed/shared
+Query Performance	        Fast	     Moderate	            Depends on structure
+Design Complexity	        Simple	      Moderate	             Complex
+Storage Efficiency	     Low (more storage)	High (less storage)  	Medium
+Use Case	               Simple DW	  Complex DW	         Multi-subject DW
+
+========================================================================================================================
+
+Materialized views in traditional SQL, such as Oracle, Postgres, or IBM DB2,
+efficiently handle read-heavy workloads and complex computations by pre-computing and storing results.
+In contrast to standard views, which are dynamically executed at query time, materialized views store precomputed data, offering improved query performance.
+
+Refresh Mechanism
+
+The data in a materialized view needs to be occasionally refreshed or synchronized with the underlying data source to remain current. Several mechanisms control this process:
+
+Complete Refresh: This method replaces the entire contents of the materialized view with fresh data from the source. It is a simple but resource-intensive approach.
+Incremental Refresh: With this technique, only the updated or new data is added to the materialized view. This method is lighter on resources and often faster.
+On-Demand Refresh: Some systems or database configurations enable manual, user-triggered refreshes.
+
+========================================================================================================================
+
+Ways to Optimize Queries
+
+Indexing: Create the right indexes on your tables. For instance, covering indexes can enhance the performance of specific queries.
+Avoid Overuse of Wildcards: Employing leading wildcards in LIKE queries can impair index usage. It’s better to design queries that begin with known text.
+Minimize TempDB Usage: Procedures involving numerous temporary tables or table variables can strain the TempDB, affecting system performance.
+Paging: Consider using OFFSET and FETCH for paging instead of sorting and selective querying.
+Input Parameters: Use parameterized queries instead of dynamic SQL to benefit from the query plan cache.
+Batch Operations: Favor set-based operations by combining similar smaller tasks into larger ones.
+Optimized Log and Resource Usage: Regular database backups, logical/log file maintenance, and resource allocation can keep the database quick and responsive.
+
+========================================================================================================================
+
+Components of a Query Execution Plan
+
+Query Tree: This visual representation begins with the query and branches into various operations, along with their dependencies and sequence.
+Logical Operators: These represent set-based operations like joins and group-bys.
+Physical Operators: Each physical operator defines how data is processed or accessed.
+Data Flow: Directed connectors and arrows show the data flow from one operator to another.
+Estimated vs. Actual Row Counts: The optimizer provides estimates for the number of rows that will be processed at various stages of the query. During execution, these estimates are validated against actual row counts.
+Optimizer Operations: Some operators are performed as part of the optimization process. For example, an Index Seek might be conducted to identify necessary indices for an operation.
+
+========================================================================================================================
+
+Partitioned tables in SQL are especially beneficial when managing large volumes of data, frequently used for time-series data. These tables are split into smaller, more manageable units, called partitions, greatly enhancing query speed and ease of maintenance.
+
+Key Advantages
+
+Query and Performance Improvements: Increasing data retrieval speed by searching only relevant partitions. For instance, a query on a sales table limited to the current quarter might only access a single partition.
+Efficient Data Management: Simplifying tasks like archiving, purging, and backup since partitioning helps identify specific data ranges.
+Easier Index Maintenance: Optimizing the use of indexes within specific partitions, which can improve search performance.
+How Data is Divided
+
+Range-Based Partitioning: Data is distributed across partitions based on specific ranges, like years or months.
+List-Based Partitioning: Data is segregated based on pre-defined values, like sales regions or types.
+Hash-Based Partitioning: Using a hashing algorithm, data is evenly distributed, providing a balance.
+Composite Partitioning: A mix of the above schemes, ensuring the data is distributed efficiently across multiple dimensions, like range-hash or range-list.
+
+========================================================================================================================
+
+Locking is a fundamental concept in databases, ensuring data integrity during concurrent transactions. It enforces a logical order for database actions, which influences performance in multi-user environments.
+
+Types of Locks
+
+Shared (S) and Exclusive (X) Locks
+
+S-Locks: Allow read access but not write, permitting multiple transactions to read a resource.
+X-Locks: Restrict both read and write access, ensuring no other transaction operates on a resource.
+
+Update (U) and Intent (I) Locks
+
+U-Locks are set on data to be updated within read-committed isolation. It’s used for a two-step read and update process.
+I-Locks are “parent” locks indicating the intent of an operation to set other lock types on “child” resources. For instance, setting an X lock on a table sets IS locks on table pages. This helps enforce lock hierarchy.
+Specialized Locks
+
+Bulk Update (BU) Locks: Applied during bulk operations.
+Schema Locks (Sch-M): Enforced at a schema level, ensuring changes like table modifications are exclusive.
+
+========================================================================================================================
+Nth highest salary
+
+SELECT
+    salary
+FROM
+    employee
+ORDER BY
+    salary DESC
+LIMIT 1 OFFSET (N-1);
+
+========================================================================================================================
+
+Bulk Insert in SQL
+Bulk Insert allows rapid data transfer from a flat file to a SQL table.
+
+BULK INSERT db_table
+FROM 'data_file.csv'
+WITH (
+    FIELDTERMINATOR = ',',  -- Field separator
+    ROWTERMINATOR = '\n'     -- Row separator
+)
+
+
+========================================================================================================================
+
+Deadlocks in SQL occur when two or more transactions lock resources in a way that prevents others from accessing them, leading to a gridlock.
+
+Mechanisms for Deadlock Management
+
+Deadlock Detection
+
+SQL automatically identifies deadlocks by monitoring resource acquisition.
+It then selects a victim (usually the latest transaction) to release resources and roll back.
+Polling vs. Non-Polling Systems
+
+Polling System: Regularly checks for deadlocks.
+Non-Polling System: Initiates deadlock checks only when an event, like a lock request, occurs.
+Code Example: Deadlock Detection
+
+Here is the SQL code:
+
+SET DEADLOCK_PRIORITY NORMAL;  -- Adjusts the priority for the current session
+Deadlock Resolution
+
+Victim Selection
+
+First Come, First Served: Chooses the transaction that entered the deadlock state first.
+Process Priority: Can be influenced by assigned priority levels.
+Victim Rollback
+
+After selecting a victim, the system:
+
+Aborts the Victim’s Transaction: Releases locks and resources acquired by the transaction.
+Notifies the Victim: Typically, an error message is generated.
+Best Practices to Avoid Deadlocks
+
+Minimize long-running transactions.
+Avoid absolute lock ordering.
+Use an application-oriented lock management strategy.
+
+========================================================================================================================
+CAST and CONVERT are  data type transformation
+-- Using CAST
+SELECT
+  CAST('2022-12-31' AS DATE) AS Cast_Date, // string to date
+  CAST('1234' AS INT) AS Cast_Int;
+
+-- Using CONVERT
+SELECT
+  CONVERT(DATE, '2022-12-31', 120) AS Convert_Date, //120 is standard format(style code)
+  CONVERT(INT, '1234') AS Convert_Int;
+
+========================================================================================================================
+
+aws dynamodb create-table \
+  --table-name Users \
+  --attribute-definitions \
+      AttributeName=UserId,AttributeType=S \
+      AttributeName=CreatedAt,AttributeType=N \
+  --key-schema \
+      AttributeName=UserId,KeyType=HASH \
+      AttributeName=CreatedAt,KeyType=RANGE \
+  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+
+S: String
+N: Number
+HASH: DIST_KEY
+RANGE: SORT_KEY
+
+Distribution Style	               Behavior             	Best Use
+EVEN	                      Evenly spreads rows	   Small staging/intermediate tables
+KEY	                        Based on a column’s value	Large tables involved in joins
+ALL	                         Replicates entire table	Small, frequently joined tables
+
+SELECT * FROM Employees
+ORDER BY ID
+OFFSET 2 ROWS
+FETCH NEXT 2 ROWS ONLY;
+
+offset ignores first 2 rows
+fetch only fetches next number of rows
