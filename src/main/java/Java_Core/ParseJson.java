@@ -32,12 +32,11 @@ public class ParseJson {
             JsonNode rootNode = mapper.readTree(new File("src/main/resources/large.json"));
 
             // Access specific fields
-            String name = rootNode.get("data").asText();
-            //int age = rootNode.get("age").asInt();
+            String key = rootNode.path("data").path("key").asText();
             //String city = rootNode.get("city").asText();
 
             // Print values
-            System.out.println("Name: " + name);
+            System.out.println("key: " + key);
             //System.out.println("Age: " + age);
             //System.out.println("City: " + city);
 
